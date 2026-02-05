@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interpretability - Credit Risk Scorer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Credit Risk Scorer</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="/individual">Individual</a>
+                <a class="nav-link" href="/batch">Batch</a>
+                <a class="nav-link active" href="/interpretability">Interpretability</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Model Interpretability & Recommendations</h2>
+                <p class="text-muted">Understand why a score was assigned and get actionable recommendations</p>
+                
+                <form id="interpretForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="CRR_NARRATION" class="form-label">CRR Narration</label>
+                                <select class="form-select" id="CRR_NARRATION" name="CRR_NARRATION">
+                                    <option value="NORMAL">NORMAL</option>
+                                    <option value="WATCH">WATCH</option>
+                                    <option value="OTHER">OTHER</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Gender" class="form-label">Gender</label>
+                                <select class="form-select" id="Gender" name="Gender">
+                                    <option value="MALE">MALE</option>
+                                    <option value="FEMALE">FEMALE</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Age" class="form-label">Age</label>
+                                <input type="number" class="form-control" id="Age" name="Age" min="18" max="100" value="35">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="NetIncome" class="form-label">Net Income</label>
+                                <input type="number" class="form-control" id="NetIncome" name="NetIncome" step="0.01" value="100000">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Exposure_Amount" class="form-label">Exposure Amount</label>
+                                <input type="number" class="form-control" id="Exposure_Amount" name="Exposure_Amount" step="0.01" value="500000">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="CurrentArrears" class="form-label">Current Arrears</label>
+                                <input type="number" class="form-control" id="CurrentArrears" name="CurrentArrears" min="0" value="0">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="MaxArrears" class="form-label">Max Arrears</label>
+                                <input type="number" class="form-control" id="MaxArrears" name="MaxArrears" min="0" value="0">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="SavingAcctDepositCount" class="form-label">Saving Account Deposits</label>
+                                <input type="number" class="form-control" id="SavingAcctDepositCount" name="SavingAcctDepositCount" min="0" value="10">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="CustomerTenure" class="form-label">Customer Tenure (years)</label>
+                                <input type="number" class="form-control" id="CustomerTenure" name="CustomerTenure" step="0.1" value="2.0">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="RUNNING_LOANS_COUNT" class="form-label">Running Loans Count</label>
+                                <input type="number" class="form-control" id="RUNNING_LOANS_COUNT" name="RUNNING_LOANS_COUNT" min="0" value="1">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden fields with defaults -->
+                    <input type="hidden" name="Max_REMAINING_TENOR(AllLoans)" value="24">
+                    <input type="hidden" name="OnUsEMI" value="0">
+                    <input type="hidden" name="DrTurnover" value="0">
+                    <input type="hidden" name="TotalAssets" value="0">
+                    <input type="hidden" name="MobileTotal" value="50">
+                    <input type="hidden" name="NonPerforming" value="0">
+                    <input type="hidden" name="EmployerStrength" value="walkin">
+                    <input type="hidden" name="SECTOR" value="BUSINESS SERVICES">
+                    <input type="hidden" name="CUSTOMER_SUBSEGMENT_NAME" value="GO BANKING">
+                    <input type="hidden" name="NATIONALITY" value="KE">
+                    <input type="hidden" name="EMPLOYEMENT_STATUS" value="EMPLOYED">
+                    <input type="hidden" name="MARITAL_STATUS" value="MARRIED">
+                    <input type="hidden" name="AML_RISK_CLASS" value="LOW">
+                    
+                    <button type="submit" class="btn btn-warning btn-lg">Analyze & Explain</button>
+                </form>
+            </div>
+            
+            <div class="col-md-6">
+                <div id="results" style="display: none;">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Risk Assessment</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="riskCategory" class="alert mb-3"></div>
+                            <p><strong>Probability:</strong> <span id="probability"></span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Feature Importance</h5>
+                        </div>
+                        <div class="card-body">
+                            <img id="featurePlot" class="img-fluid" alt="Feature Importance Plot">
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Recommendations for Improvement</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="recommendations"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="loading" class="text-center" style="display: none;">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Analyzing prediction...</p>
+                </div>
+                
+                <div id="error" class="alert alert-danger" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('interpretForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const error = document.getElementById('error');
+            
+            loading.style.display = 'block';
+            results.style.display = 'none';
+            error.style.display = 'none';
+            
+            const formData = new FormData(this);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                // Convert numeric fields
+                if (['Age', 'NetIncome', 'Exposure_Amount', 'RUNNING_LOANS_COUNT', 'CurrentArrears', 'MaxArrears', 'CustomerTenure', 'SavingAcctDepositCount', 'Max_REMAINING_TENOR(AllLoans)', 'OnUsEMI', 'DrTurnover', 'TotalAssets', 'MobileTotal', 'NonPerforming'].includes(key)) {
+                    data[key] = parseFloat(value) || 0;
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            try {
+                const response = await fetch('/explain', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Update risk assessment
+                    document.getElementById('probability').textContent = (result.probability * 100).toFixed(2) + '%';
+                    
+                    const riskCategory = document.getElementById('riskCategory');
+                    riskCategory.textContent = result.risk_category;
+                    riskCategory.className = 'alert mb-3 ' + 
+                        (result.risk_category === 'Low Risk' ? 'alert-success' : 
+                         result.risk_category === 'Medium Risk' ? 'alert-warning' : 'alert-danger');
+                    
+                    // Update feature importance plot
+                    document.getElementById('featurePlot').src = 'data:image/png;base64,' + result.feature_plot;
+                    
+                    // Update recommendations
+                    const recommendationsDiv = document.getElementById('recommendations');
+                    recommendationsDiv.innerHTML = '';
+                    
+                    result.recommendations.forEach(rec => {
+                        const p = document.createElement('p');
+                        p.className = 'mb-2';
+                        p.textContent = rec;
+                        recommendationsDiv.appendChild(p);
+                    });
+                    
+                    results.style.display = 'block';
+                } else {
+                    error.textContent = result.error;
+                    error.style.display = 'block';
+                }
+            } catch (err) {
+                error.textContent = 'Error: ' + err.message;
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

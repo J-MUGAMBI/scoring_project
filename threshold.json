@@ -1,0 +1,6 @@
+{
+  "model": "XGB_Tuned",
+  "best_threshold": 0.66,
+  "objective": "maximize F1 subject to Recall >= 0.75",
+  "notes": "Use this threshold when converting predicted probabilities to 0/1."
+}

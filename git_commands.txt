@@ -1,0 +1,25 @@
+# Git Commands to Push to GitHub
+
+# 1. Initialize Git repository (if not already done)
+git init
+
+# 2. Add all files (CSV will be ignored due to .gitignore)
+git add .
+
+# 3. Commit the changes
+git commit -m "Initial commit: Credit Risk Scoring System with Flask web app"
+
+# 4. Add remote repository
+git remote add origin https://github.com/J-MUGAMBI/scoring_project.git
+
+# 5. Push to GitHub
+git push -u origin main
+
+# Alternative if main branch doesn't exist:
+# git branch -M main
+# git push -u origin main
+
+# For subsequent updates:
+# git add .
+# git commit -m "Your commit message"
+# git push
