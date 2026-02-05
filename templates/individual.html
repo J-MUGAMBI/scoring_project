@@ -5,193 +5,608 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Individual Scoring - Credit Risk Scorer</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            background: linear-gradient(135deg, var(--primary-color), #34495e);
+            color: white;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        
+        .sidebar-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-header p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+        
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            border-left-color: var(--secondary-color);
+        }
+        
+        .nav-link i {
+            width: 20px;
+            margin-right: 1rem;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1400px;
+        }
+        
+        .page-header {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 0;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-right: 0.8rem;
+            color: var(--secondary-color);
+        }
+        
+        .form-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            font-size: 1rem;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+        
+        .btn-calculate {
+            background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+            color: white;
+        }
+        
+        .results-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 2rem;
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .results-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .risk-display {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .risk-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .risk-low {
+            background: linear-gradient(135deg, var(--success-color), #229954);
+            color: white;
+        }
+        
+        .risk-medium {
+            background: linear-gradient(135deg, var(--warning-color), #e67e22);
+            color: white;
+        }
+        
+        .risk-high {
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+            color: white;
+        }
+        
+        .risk-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .risk-category {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .risk-probability {
+            font-size: 1.5rem;
+            opacity: 0.9;
+        }
+        
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .detail-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .detail-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .detail-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3rem;
+        }
+        
+        .loading-text {
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            margin-top: 1rem;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .form-row {
+            margin-bottom: 0.8rem;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .form-container {
+                padding: 2rem;
+            }
+            
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">Credit Risk Scorer</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/">Home</a>
-                <a class="nav-link active" href="/individual">Individual</a>
-                <a class="nav-link" href="/batch">Batch</a>
-                <a class="nav-link" href="/interpretability">Interpretability</a>
-            </div>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-chart-line"></i>🏦 CreditScore AI</h3>
+            <p>Advanced Risk Assessment Platform</p>
         </div>
-    </nav>
-
-    <div class="container my-5">
+        
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/individual" class="nav-link active">
+                    <i class="fas fa-user"></i>
+                    Individual Scoring
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/batch" class="nav-link">
+                    <i class="fas fa-upload"></i>
+                    Batch Scoring
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/interpretability" class="nav-link">
+                    <i class="fas fa-brain"></i>
+                    AI Interpretability
+                </a>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container my-4">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-user-check me-3"></i>
+                Individual Credit Risk Assessment
+            </h1>
+            <p class="page-subtitle">Enter customer details below to get an instant AI-powered risk evaluation</p>
+        </div>
+        
         <div class="row">
-            <div class="col-md-8">
-                <h2>Individual Credit Risk Scoring</h2>
-                <p class="text-muted">Enter customer details to get an instant risk assessment</p>
-                
-                <form id="scoringForm">
-                    <div class="row">
-                        <!-- Categorical Features -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="CRR_NARRATION" class="form-label">CRR Narration</label>
-                                <select class="form-select" id="CRR_NARRATION" name="CRR_NARRATION">
-                                    <option value="NORMAL">NORMAL</option>
-                                    <option value="WATCH">WATCH</option>
-                                    <option value="OTHER">OTHER</option>
-                                </select>
+            <!-- Form Section -->
+            <div class="col-lg-8">
+                <div class="form-container">
+                    <form id="scoringForm">
+                        <div class="row">
+                            <!-- Left Column -->
+                            <div class="col-md-6">
+                                <!-- Personal Information -->
+                                <div class="form-section">
+                                    <h3 class="section-title">
+                                        <i class="fas fa-user"></i>
+                                        Personal Information
+                                    </h3>
+                                    <div class="row form-row">
+                                        <div class="col-6">
+                                            <label for="Age" class="form-label">Age</label>
+                                            <input type="number" class="form-control" id="Age" name="Age" min="18" max="100" value="35" required>
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="Gender" class="form-label">Gender</label>
+                                            <select class="form-select" id="Gender" name="Gender" required>
+                                                <option value="MALE">Male</option>
+                                                <option value="FEMALE">Female</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row form-row">
+                                        <div class="col-6">
+                                            <label for="MARITAL_STATUS" class="form-label">Marital Status</label>
+                                            <select class="form-select" id="MARITAL_STATUS" name="MARITAL_STATUS" required>
+                                                <option value="MARRIED">Married</option>
+                                                <option value="SINGLE">Single</option>
+                                                <option value="OTHER">Other</option>
+                                                <option value="WIDOWED">Widowed</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="EMPLOYEMENT_STATUS" class="form-label">Employment Status</label>
+                                            <select class="form-select" id="EMPLOYEMENT_STATUS" name="EMPLOYEMENT_STATUS" required>
+                                                <option value="EMPLOYED">Employed</option>
+                                                <option value="SELF-EMPLOYED">Self-Employed</option>
+                                                <option value="OTHER">Other</option>
+                                                <option value="STUDENT">Student</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Financial Information -->
+                                <div class="form-section">
+                                    <h3 class="section-title">
+                                        <i class="fas fa-dollar-sign"></i>
+                                        Financial Information
+                                    </h3>
+                                    <div class="row form-row">
+                                        <div class="col-12">
+                                            <label for="NetIncome" class="form-label">Monthly Net Income</label>
+                                            <input type="number" class="form-control" id="NetIncome" name="NetIncome" step="0.01" value="100000" required>
+                                        </div>
+                                    </div>
+                                    <div class="row form-row">
+                                        <div class="col-12">
+                                            <label for="Exposure_Amount" class="form-label">Loan Amount Requested</label>
+                                            <input type="number" class="form-control" id="Exposure_Amount" name="Exposure_Amount" step="0.01" value="500000" required>
+                                        </div>
+                                    </div>
+                                    <div class="row form-row">
+                                        <div class="col-6">
+                                            <label for="CurrentArrears" class="form-label">Current Arrears</label>
+                                            <input type="number" class="form-control" id="CurrentArrears" name="CurrentArrears" min="0" value="0">
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="MaxArrears" class="form-label">Max Arrears</label>
+                                            <input type="number" class="form-control" id="MaxArrears" name="MaxArrears" min="0" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column -->
+                            <div class="col-md-6">
+                                <!-- Banking Information -->
+                                <div class="form-section">
+                                    <h3 class="section-title">
+                                        <i class="fas fa-university"></i>
+                                        Banking & Credit
+                                    </h3>
+                                    <div class="row form-row">
+                                        <div class="col-12">
+                                            <label for="CRR_NARRATION" class="form-label">Credit Risk Rating</label>
+                                            <select class="form-select" id="CRR_NARRATION" name="CRR_NARRATION" required>
+                                                <option value="NORMAL">Normal</option>
+                                                <option value="WATCH">Watch</option>
+                                                <option value="OTHER">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row form-row">
+                                        <div class="col-6">
+                                            <label for="RUNNING_LOANS_COUNT" class="form-label">Running Loans</label>
+                                            <input type="number" class="form-control" id="RUNNING_LOANS_COUNT" name="RUNNING_LOANS_COUNT" min="0" value="1">
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="SavingAcctDepositCount" class="form-label">Savings Deposits</label>
+                                            <input type="number" class="form-control" id="SavingAcctDepositCount" name="SavingAcctDepositCount" min="0" value="10">
+                                        </div>
+                                    </div>
+                                    <div class="row form-row">
+                                        <div class="col-12">
+                                            <label for="CustomerTenure" class="form-label">Customer Tenure (years)</label>
+                                            <input type="number" class="form-control" id="CustomerTenure" name="CustomerTenure" step="0.1" value="2.0">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Business Information -->
+                                <div class="form-section">
+                                    <h3 class="section-title">
+                                        <i class="fas fa-briefcase"></i>
+                                        Business Information
+                                    </h3>
+                                    <div class="row form-row">
+                                        <div class="col-12">
+                                            <label for="SECTOR" class="form-label">Industry Sector</label>
+                                            <select class="form-select" id="SECTOR" name="SECTOR" required>
+                                                <option value="BUSINESS SERVICES">Business Services</option>
+                                                <option value="MANUFACTURING">Manufacturing</option>
+                                                <option value="TRANSPORT & COMMUNICATION">Transport & Communication</option>
+                                                <option value="WHOLESALE AND RETAIL TRADE">Wholesale and Retail Trade</option>
+                                                <option value="INDIVIDUALS">Individuals</option>
+                                                <option value="OTHER">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row form-row">
+                                        <div class="col-12">
+                                            <label for="CUSTOMER_SUBSEGMENT_NAME" class="form-label">Customer Segment</label>
+                                            <select class="form-select" id="CUSTOMER_SUBSEGMENT_NAME" name="CUSTOMER_SUBSEGMENT_NAME" required>
+                                                <option value="GO BANKING">Go Banking</option>
+                                                <option value="GOLD">Gold</option>
+                                                <option value="PLATINUM">Platinum</option>
+                                                <option value="PREMIER BANKING">Premier Banking</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="Gender" class="form-label">Gender</label>
-                                <select class="form-select" id="Gender" name="Gender">
-                                    <option value="MALE">MALE</option>
-                                    <option value="FEMALE">FEMALE</option>
-                                </select>
-                            </div>
-                        </div>
+                        <!-- Hidden fields -->
+                        <input type="hidden" name="Max_REMAINING_TENOR(AllLoans)" value="24">
+                        <input type="hidden" name="OnUsEMI" value="0">
+                        <input type="hidden" name="DrTurnover" value="0">
+                        <input type="hidden" name="TotalAssets" value="0">
+                        <input type="hidden" name="MobileTotal" value="50">
+                        <input type="hidden" name="NonPerforming" value="0">
+                        <input type="hidden" name="EmployerStrength" value="walkin">
+                        <input type="hidden" name="NATIONALITY" value="KE">
+                        <input type="hidden" name="AML_RISK_CLASS" value="LOW">
                         
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="SECTOR" class="form-label">Sector</label>
-                                <select class="form-select" id="SECTOR" name="SECTOR">
-                                    <option value="BUSINESS SERVICES">BUSINESS SERVICES</option>
-                                    <option value="MANUFACTURING">MANUFACTURING</option>
-                                    <option value="TRANSPORT & COMMUNICATION">TRANSPORT & COMMUNICATION</option>
-                                    <option value="WHOLESALE AND RETAIL TRADE">WHOLESALE AND RETAIL TRADE</option>
-                                    <option value="INDIVIDUALS">INDIVIDUALS</option>
-                                    <option value="OTHER">OTHER</option>
-                                </select>
-                            </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-calculate pulse">
+                                <i class="fas fa-calculator me-2"></i>
+                                Calculate Risk Score
+                            </button>
                         </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="CUSTOMER_SUBSEGMENT_NAME" class="form-label">Customer Subsegment</label>
-                                <select class="form-select" id="CUSTOMER_SUBSEGMENT_NAME" name="CUSTOMER_SUBSEGMENT_NAME">
-                                    <option value="GO BANKING">GO BANKING</option>
-                                    <option value="GOLD">GOLD</option>
-                                    <option value="PLATINUM">PLATINUM</option>
-                                    <option value="PREMIER BANKING">PREMIER BANKING</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="EMPLOYEMENT_STATUS" class="form-label">Employment Status</label>
-                                <select class="form-select" id="EMPLOYEMENT_STATUS" name="EMPLOYEMENT_STATUS">
-                                    <option value="EMPLOYED">EMPLOYED</option>
-                                    <option value="SELF-EMPLOYED">SELF-EMPLOYED</option>
-                                    <option value="OTHER">OTHER</option>
-                                    <option value="STUDENT">STUDENT</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="MARITAL_STATUS" class="form-label">Marital Status</label>
-                                <select class="form-select" id="MARITAL_STATUS" name="MARITAL_STATUS">
-                                    <option value="MARRIED">MARRIED</option>
-                                    <option value="SINGLE">SINGLE</option>
-                                    <option value="OTHER">OTHER</option>
-                                    <option value="WIDOWED">WIDOWED</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Numerical Features -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="Age" class="form-label">Age</label>
-                                <input type="number" class="form-control" id="Age" name="Age" min="18" max="100" value="35">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="NetIncome" class="form-label">Net Income</label>
-                                <input type="number" class="form-control" id="NetIncome" name="NetIncome" step="0.01" value="100000">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="Exposure_Amount" class="form-label">Exposure Amount</label>
-                                <input type="number" class="form-control" id="Exposure_Amount" name="Exposure_Amount" step="0.01" value="500000">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="RUNNING_LOANS_COUNT" class="form-label">Running Loans Count</label>
-                                <input type="number" class="form-control" id="RUNNING_LOANS_COUNT" name="RUNNING_LOANS_COUNT" min="0" value="1">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="CurrentArrears" class="form-label">Current Arrears</label>
-                                <input type="number" class="form-control" id="CurrentArrears" name="CurrentArrears" min="0" value="0">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="MaxArrears" class="form-label">Max Arrears</label>
-                                <input type="number" class="form-control" id="MaxArrears" name="MaxArrears" min="0" value="0">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="CustomerTenure" class="form-label">Customer Tenure (years)</label>
-                                <input type="number" class="form-control" id="CustomerTenure" name="CustomerTenure" step="0.1" value="2.0">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="SavingAcctDepositCount" class="form-label">Saving Account Deposit Count</label>
-                                <input type="number" class="form-control" id="SavingAcctDepositCount" name="SavingAcctDepositCount" min="0" value="10">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Additional fields with default values -->
-                    <input type="hidden" name="Max_REMAINING_TENOR(AllLoans)" value="24">
-                    <input type="hidden" name="OnUsEMI" value="0">
-                    <input type="hidden" name="DrTurnover" value="0">
-                    <input type="hidden" name="TotalAssets" value="0">
-                    <input type="hidden" name="MobileTotal" value="50">
-                    <input type="hidden" name="NonPerforming" value="0">
-                    <input type="hidden" name="EmployerStrength" value="walkin">
-                    <input type="hidden" name="NATIONALITY" value="KE">
-                    <input type="hidden" name="AML_RISK_CLASS" value="LOW">
-                    
-                    <button type="submit" class="btn btn-primary btn-lg">Calculate Risk Score</button>
-                </form>
+                    </form>
+                </div>
             </div>
             
-            <div class="col-md-4">
-                <div id="results" class="card" style="display: none;">
-                    <div class="card-header">
-                        <h5>Risk Assessment Results</h5>
+            <!-- Results Section -->
+            <div class="col-lg-4">
+                <div class="results-container">
+                    <div id="results" style="display: none;">
+                        <div class="results-header">
+                            <h4 class="results-title">
+                                <i class="fas fa-chart-pie me-2"></i>
+                                Risk Assessment Results
+                            </h4>
+                        </div>
+                        
+                        <div id="riskDisplay" class="risk-display">
+                            <i id="riskIcon" class="risk-icon"></i>
+                            <div id="riskCategory" class="risk-category"></div>
+                            <div id="riskProbability" class="risk-probability"></div>
+                        </div>
+                        
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">Prediction</div>
+                                <div id="prediction" class="detail-value"></div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Threshold</div>
+                                <div id="threshold" class="detail-value"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div id="riskCategory" class="alert mb-3"></div>
-                        <p><strong>Probability:</strong> <span id="probability"></span></p>
-                        <p><strong>Prediction:</strong> <span id="prediction"></span></p>
-                        <p><strong>Threshold:</strong> <span id="threshold"></span></p>
+                    
+                    <div id="loading" class="loading-spinner" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="loading-text">Analyzing risk profile...</div>
                     </div>
-                </div>
-                
-                <div id="loading" class="text-center" style="display: none;">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
+                    
+                    <div id="defaultMessage" class="text-center text-muted">
+                        <i class="fas fa-info-circle fa-3x mb-3"></i>
+                        <h5>Ready for Assessment</h5>
+                        <p>Fill out the form and click "Calculate Risk Score" to see the AI-powered risk evaluation.</p>
                     </div>
-                    <p>Calculating risk score...</p>
                 </div>
             </div>
+        </div>
         </div>
     </div>
 
@@ -202,15 +617,16 @@
             
             const loading = document.getElementById('loading');
             const results = document.getElementById('results');
+            const defaultMessage = document.getElementById('defaultMessage');
             
             loading.style.display = 'block';
             results.style.display = 'none';
+            defaultMessage.style.display = 'none';
             
             const formData = new FormData(this);
             const data = {};
             
             for (let [key, value] of formData.entries()) {
-                // Convert numeric fields
                 if (['Age', 'NetIncome', 'Exposure_Amount', 'RUNNING_LOANS_COUNT', 'CurrentArrears', 'MaxArrears', 'CustomerTenure', 'SavingAcctDepositCount', 'Max_REMAINING_TENOR(AllLoans)', 'OnUsEMI', 'DrTurnover', 'TotalAssets', 'MobileTotal', 'NonPerforming'].includes(key)) {
                     data[key] = parseFloat(value) || 0;
                 } else {
@@ -230,22 +646,45 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    document.getElementById('probability').textContent = (result.probability * 100).toFixed(2) + '%';
-                    document.getElementById('prediction').textContent = result.prediction === 1 ? 'Default Risk' : 'No Default Risk';
-                    document.getElementById('threshold').textContent = (result.threshold * 100).toFixed(1) + '%';
-                    
+                    // Update results display
+                    const riskDisplay = document.getElementById('riskDisplay');
+                    const riskIcon = document.getElementById('riskIcon');
                     const riskCategory = document.getElementById('riskCategory');
-                    riskCategory.textContent = result.risk_category;
-                    riskCategory.className = 'alert mb-3 ' + 
-                        (result.risk_category === 'Low Risk' ? 'alert-success' : 
-                         result.risk_category === 'Medium Risk' ? 'alert-warning' : 'alert-danger');
+                    const riskProbability = document.getElementById('riskProbability');
+                    
+                    // Set risk category and styling
+                    if (riskCategory) riskCategory.textContent = result.risk_category;
+                    if (riskProbability) riskProbability.textContent = `${(result.probability * 100).toFixed(1)}% Risk Probability`;
+                    
+                    // Remove existing risk classes
+                    if (riskDisplay) riskDisplay.classList.remove('risk-low', 'risk-medium', 'risk-high');
+                    
+                    // Add appropriate styling and icon
+                    if (result.risk_category === 'Low Risk') {
+                        if (riskDisplay) riskDisplay.classList.add('risk-low');
+                        if (riskIcon) riskIcon.className = 'risk-icon fas fa-check-circle';
+                    } else if (result.risk_category === 'Medium Risk') {
+                        if (riskDisplay) riskDisplay.classList.add('risk-medium');
+                        if (riskIcon) riskIcon.className = 'risk-icon fas fa-exclamation-triangle';
+                    } else {
+                        if (riskDisplay) riskDisplay.classList.add('risk-high');
+                        if (riskIcon) riskIcon.className = 'risk-icon fas fa-times-circle';
+                    }
+                    
+                    // Update other details
+                    const prediction = document.getElementById('prediction');
+                    const threshold = document.getElementById('threshold');
+                    if (prediction) prediction.textContent = result.prediction === 1 ? 'Default Risk' : 'No Default Risk';
+                    if (threshold) threshold.textContent = `${(result.threshold * 100).toFixed(1)}%`;
                     
                     results.style.display = 'block';
                 } else {
                     alert('Error: ' + result.error);
+                    defaultMessage.style.display = 'block';
                 }
             } catch (error) {
                 alert('Error: ' + error.message);
+                defaultMessage.style.display = 'block';
             } finally {
                 loading.style.display = 'none';
             }

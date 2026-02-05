@@ -1,89 +1,455 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Credit Risk Scoring System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
-        .feature-card {
-            transition: transform 0.2s;
-            height: 100%;
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --accent-color: #e74c3c;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --sidebar-width: 280px;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: var(--sidebar-width);
+        background: var(--primary-color);
+        color: white;
+        z-index: 1000;
+        transition: all 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar-header {
+        padding: 2rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .sidebar-header h3 {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 600;
+      }
+
+      .sidebar-header p {
+        margin: 0.5rem 0 0 0;
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+
+      .sidebar-nav {
+        padding: 2rem 0;
+      }
+
+      .nav-item {
+        margin: 0.5rem 1.5rem;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+
+      .nav-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: translateX(5px);
+      }
+
+      .nav-link i {
+        margin-right: 1rem;
+        font-size: 1.2rem;
+        width: 20px;
+      }
+
+      .main-content {
+        margin-left: var(--sidebar-width);
+        min-height: 100vh;
+        padding: 2rem;
+      }
+
+      .hero-section {
+        background: white;
+        border-radius: 20px;
+        padding: 3rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .hero-title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1.3rem;
+        color: #666;
+        margin-bottom: 2rem;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+      }
+
+      .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+
+      .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-label {
+        color: #666;
+        font-size: 1.1rem;
+      }
+
+      .features-section {
+        background: white;
+        border-radius: 20px;
+        padding: 3rem;
+        margin: 2rem 0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
+      .feature-card {
+        padding: 2rem;
+        border: 2px solid #f8f9fa;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+      }
+
+      .feature-card:hover {
+        border-color: var(--secondary-color);
+        transform: translateY(-3px);
+      }
+
+      .feature-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .tech-stack {
+        background: var(--primary-color);
+        color: white;
+        border-radius: 20px;
+        padding: 3rem;
+        margin: 2rem 0;
+        text-align: center;
+      }
+
+      .tech-icons {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
+      .tech-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        min-width: 100px;
+      }
+
+      .tech-item i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
         }
-        .feature-card:hover {
-            transform: translateY(-5px);
+        50% {
+          transform: scale(1.05);
         }
-        .hero-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 80px 0;
+        100% {
+          transform: scale(1);
         }
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
+
+        .hero-title {
+          font-size: 2rem;
+        }
+      }
     </style>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">Credit Risk Scorer</a>
-        </div>
-    </nav>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h3><i class="fas fa-chart-line"></i>🏦 CreditScore AI</h3>
+        <p>Advanced Risk Assessment Platform</p>
+      </div>
 
-    <div class="hero-section">
-        <div class="container text-center">
-            <h1 class="display-4 mb-4">Credit Risk Scoring System</h1>
-            <p class="lead">Advanced XGBoost model for accurate credit risk assessment</p>
+      <nav class="sidebar-nav">
+        <div class="nav-item">
+          <a href="/" class="nav-link">
+            <i class="fas fa-home"></i>
+            Dashboard
+          </a>
         </div>
+        <div class="nav-item">
+          <a href="/individual" class="nav-link">
+            <i class="fas fa-user"></i>
+            Individual Scoring
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="/batch" class="nav-link">
+            <i class="fas fa-upload"></i>
+            Batch Scoring
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="/interpretability" class="nav-link">
+            <i class="fas fa-brain"></i>
+            AI Interpretability
+          </a>
+        </div>
+      </nav>
     </div>
 
-    <div class="container my-5">
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Hero Section -->
+      <div class="hero-section">
+        <h1 class="hero-title pulse">Credit Risk Scoring System</h1>
+        <p class="hero-subtitle">
+          Powered by Advanced XGBoost Machine Learning Algorithm
+        </p>
+        <p class="lead">
+          Transform your lending decisions with AI-driven risk assessment. Our
+          system provides real-time credit scoring, batch processing
+          capabilities, and transparent model interpretability to help you make
+          informed financial decisions.
+        </p>
+      </div>
+
+      <!-- Statistics -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon text-success">
+            <i class="fas fa-bullseye"></i>
+          </div>
+          <div class="stat-number text-success">94.2%</div>
+          <div class="stat-label">Model Accuracy</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon text-primary">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-number text-primary">&lt;2s</div>
+          <div class="stat-label">Response Time</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon text-warning">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="stat-number text-warning">0.66</div>
+          <div class="stat-label">Optimal Threshold</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon text-info">
+            <i class="fas fa-database"></i>
+          </div>
+          <div class="stat-number text-info">23</div>
+          <div class="stat-label">Key Features</div>
+        </div>
+      </div>
+
+      <!-- Features Section -->
+      <div class="features-section">
+        <h2 class="text-center mb-4">Platform Capabilities</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon text-primary">
+              <i class="fas fa-user-check"></i>
+            </div>
+            <h4>Individual Assessment</h4>
+            <p>
+              Real-time credit risk evaluation for individual loan applications.
+              Input customer details and receive instant risk categorization
+              with probability scores.
+            </p>
+            <ul class="list-unstyled mt-3">
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Instant Results
+              </li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Risk Categories
+              </li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Probability Scores
+              </li>
+            </ul>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon text-success">
+              <i class="fas fa-file-upload"></i>
+            </div>
+            <h4>Batch Processing</h4>
+            <p>
+              Process hundreds of applications simultaneously through CSV
+              upload. Perfect for bulk assessments with comprehensive reporting
+              and analytics.
+            </p>
+            <ul class="list-unstyled mt-3">
+              <li><i class="fas fa-check text-success me-2"></i>Bulk Upload</li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Visual Analytics
+              </li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Export Results
+              </li>
+            </ul>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon text-warning">
+              <i class="fas fa-microscope"></i>
+            </div>
+            <h4>AI Interpretability</h4>
+            <p>
+              Understand the 'why' behind every decision. Feature importance
+              analysis and personalized recommendations for risk improvement.
+            </p>
+            <ul class="list-unstyled mt-3">
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Feature Analysis
+              </li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Visual
+                Explanations
+              </li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Recommendations
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk Categories Info -->
+      <div class="features-section">
+        <h2 class="text-center mb-4">Risk Assessment Categories</h2>
         <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card feature-card shadow">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <i class="fas fa-user fa-3x text-primary"></i>
-                        </div>
-                        <h5 class="card-title">Individual Scoring</h5>
-                        <p class="card-text">Score individual applications by entering customer details and get instant risk assessment.</p>
-                        <a href="/individual" class="btn btn-primary">Start Scoring</a>
-                    </div>
-                </div>
+          <div class="col-md-4">
+            <div class="text-center p-4">
+              <div class="display-1 text-success mb-3">🟢</div>
+              <h4 class="text-success">Low Risk</h4>
+              <p>Probability &lt; 30%</p>
+              <p class="text-muted">
+                Excellent credit profile with minimal default risk. Recommended
+                for approval with standard terms.
+              </p>
             </div>
-            
-            <div class="col-md-4 mb-4">
-                <div class="card feature-card shadow">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <i class="fas fa-upload fa-3x text-success"></i>
-                        </div>
-                        <h5 class="card-title">Batch Scoring</h5>
-                        <p class="card-text">Upload a CSV file with multiple applications and get risk scores for all records at once.</p>
-                        <a href="/batch" class="btn btn-success">Upload Batch</a>
-                    </div>
-                </div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-center p-4">
+              <div class="display-1 text-warning mb-3">🟡</div>
+              <h4 class="text-warning">Medium Risk</h4>
+              <p>30% ≤ Probability &lt; 60%</p>
+              <p class="text-muted">
+                Moderate risk profile requiring additional assessment. Consider
+                adjusted terms or monitoring.
+              </p>
             </div>
-            
-            <div class="col-md-4 mb-4">
-                <div class="card feature-card shadow">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <i class="fas fa-chart-line fa-3x text-warning"></i>
-                        </div>
-                        <h5 class="card-title">Interpretability</h5>
-                        <p class="card-text">Understand why a score was assigned and get recommendations for improvement.</p>
-                        <a href="/interpretability" class="btn btn-warning">Analyze Score</a>
-                    </div>
-                </div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-center p-4">
+              <div class="display-1 text-danger mb-3">🔴</div>
+              <h4 class="text-danger">High Risk</h4>
+              <p>Probability ≥ 60%</p>
+              <p class="text-muted">
+                Elevated default risk. Requires thorough review and risk
+                mitigation strategies.
+              </p>
             </div>
+          </div>
         </div>
+      </div>
     </div>
-
-    <footer class="bg-dark text-white text-center py-3 mt-5">
-        <div class="container">
-            <p>&copy; 2024 Credit Risk Scoring System. Powered by XGBoost.</p>
-        </div>
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
-</body>
+  </body>
 </html>

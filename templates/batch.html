@@ -5,127 +5,588 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Batch Scoring - Credit Risk Scorer</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a252f;
+            --secondary-color: #2ecc71;
+            --accent-color: #3498db;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 50%, #229954 100%);
+            min-height: 100vh;
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            background: linear-gradient(135deg, var(--primary-color), #34495e);
+            color: white;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        
+        .sidebar-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-header p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+        
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            border-left-color: var(--secondary-color);
+        }
+        
+        .nav-link i {
+            width: 20px;
+            margin-right: 1rem;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            background: var(--primary-color) !important;
+        }
+        
+        .container {
+            max-width: 1400px;
+        }
+        
+        .page-header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 2rem;
+            margin: 1rem 0;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 0;
+        }
+        
+        .upload-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 3rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .instructions-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+        
+        .instructions-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .instructions-title i {
+            margin-right: 0.5rem;
+            color: var(--secondary-color);
+        }
+        
+        .column-list {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        .column-list ul {
+            margin: 0;
+            padding-left: 1rem;
+        }
+        
+        .column-list li {
+            padding: 0.3rem 0;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .upload-zone {
+            border: 3px dashed var(--secondary-color);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.05), rgba(39, 174, 96, 0.05));
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        
+        .upload-zone:hover {
+            border-color: #27ae60;
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(39, 174, 96, 0.1));
+            transform: translateY(-2px);
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .upload-text {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-subtext {
+            color: #666;
+            font-size: 1rem;
+        }
+        
+        .form-control {
+            font-size: 1.1rem;
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(46, 204, 113, 0.25);
+        }
+        
+        .btn-process {
+            background: linear-gradient(135deg, var(--secondary-color), #27ae60);
+            border: none;
+            padding: 1.2rem 3rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-radius: 50px;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-process:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(46, 204, 113, 0.4);
+            color: white;
+        }
+        
+        .results-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 2.5rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .results-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .risk-breakdown {
+            margin: 2rem 0;
+        }
+        
+        .risk-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .risk-low {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(39, 174, 96, 0.1));
+            color: var(--secondary-color);
+        }
+        
+        .risk-medium {
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.1), rgba(230, 126, 34, 0.1));
+            color: var(--warning-color);
+        }
+        
+        .risk-high {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
+            color: var(--danger-color);
+        }
+        
+        .progress-container {
+            margin: 1.5rem 0;
+        }
+        
+        .progress {
+            height: 15px;
+            border-radius: 10px;
+            background: #e9ecef;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            transition: width 1s ease;
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, var(--accent-color), #2980b9);
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 25px;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+            color: white;
+        }
+        
+        .loading-container {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .spinner-border {
+            width: 4rem;
+            height: 4rem;
+            border-width: 0.4rem;
+            color: var(--secondary-color);
+        }
+        
+        .loading-text {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            margin-top: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .error-container {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
+            border: 2px solid var(--danger-color);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .page-title {
+                font-size: 2.2rem;
+            }
+            
+            .upload-container, .results-container {
+                padding: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">Credit Risk Scorer</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/">Home</a>
-                <a class="nav-link" href="/individual">Individual</a>
-                <a class="nav-link active" href="/batch">Batch</a>
-                <a class="nav-link" href="/interpretability">Interpretability</a>
-            </div>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-chart-line"></i>🏦 CreditScore AI</h3>
+            <p>Advanced Risk Assessment Platform</p>
         </div>
-    </nav>
-
-    <div class="container my-5">
+        
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/individual" class="nav-link">
+                    <i class="fas fa-user"></i>
+                    Individual Scoring
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/batch" class="nav-link active">
+                    <i class="fas fa-upload"></i>
+                    Batch Scoring
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/interpretability" class="nav-link">
+                    <i class="fas fa-brain"></i>
+                    AI Interpretability
+                </a>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container my-4">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-file-upload me-3"></i>
+                Batch Credit Risk Processing
+            </h1>
+            <p class="page-subtitle">Upload CSV files to process multiple applications simultaneously with AI-powered risk assessment</p>
+        </div>
+        
         <div class="row">
-            <div class="col-md-8">
-                <h2>Batch Credit Risk Scoring</h2>
-                <p class="text-muted">Upload a CSV file with multiple applications to get risk scores for all records</p>
-                
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5>Upload Instructions</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>Your CSV file should contain the following columns:</p>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <ul class="list-unstyled">
-                                    <li>• CRR_NARRATION</li>
-                                    <li>• Max_REMAINING_TENOR(AllLoans)</li>
-                                    <li>• RUNNING_LOANS_COUNT</li>
-                                    <li>• Exposure_Amount</li>
-                                    <li>• NetIncome</li>
-                                    <li>• OnUsEMI</li>
-                                    <li>• DrTurnover</li>
-                                    <li>• TotalAssets</li>
-                                    <li>• MobileTotal</li>
-                                    <li>• MaxArrears</li>
-                                    <li>• CurrentArrears</li>
-                                    <li>• NonPerforming</li>
-                                </ul>
+            <!-- Upload Section -->
+            <div class="col-lg-8">
+                <div class="upload-container">
+                    <!-- Instructions -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="instructions-card">
+                                <h3 class="instructions-title">
+                                    <i class="fas fa-info-circle"></i>
+                                    CSV Requirements
+                                </h3>
+                                <p class="mb-2">Required columns:</p>
+                                <div class="column-list">
+                                    <ul class="list-unstyled" style="font-size: 0.85rem;">
+                                        <li><i class="fas fa-check text-success me-1"></i>CRR_NARRATION</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>Max_REMAINING_TENOR(AllLoans)</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>RUNNING_LOANS_COUNT</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>Exposure_Amount</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>NetIncome</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>OnUsEMI</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>DrTurnover</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>TotalAssets</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>MobileTotal</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>MaxArrears</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>CurrentArrears</li>
+                                    </ul>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <ul class="list-unstyled">
-                                    <li>• Gender</li>
-                                    <li>• SavingAcctDepositCount</li>
-                                    <li>• Age</li>
-                                    <li>• EmployerStrength</li>
-                                    <li>• SECTOR</li>
-                                    <li>• CUSTOMER_SUBSEGMENT_NAME</li>
-                                    <li>• NATIONALITY</li>
-                                    <li>• EMPLOYEMENT_STATUS</li>
-                                    <li>• MARITAL_STATUS</li>
-                                    <li>• AML_RISK_CLASS</li>
-                                    <li>• CustomerTenure</li>
-                                </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="instructions-card">
+                                <h3 class="instructions-title">
+                                    <i class="fas fa-upload"></i>
+                                    Upload & Process
+                                </h3>
+                                <form id="batchForm" enctype="multipart/form-data">
+                                    <div class="upload-zone">
+                                        <i class="fas fa-cloud-upload-alt upload-icon" style="font-size: 2.5rem;"></i>
+                                        <div class="upload-text" style="font-size: 1rem;">Drop CSV file or click to browse</div>
+                                        <div class="upload-subtext" style="font-size: 0.85rem;">Max: 16MB</div>
+                                        <input type="file" class="form-control mt-2" id="csvFile" name="file" accept=".csv" required style="font-size: 0.9rem; padding: 0.6rem;">
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button type="submit" class="btn btn-process" style="padding: 0.8rem 2rem; font-size: 1rem;">
+                                            <i class="fas fa-cogs me-2"></i>
+                                            Process Batch
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <form id="batchForm" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label for="csvFile" class="form-label">Select CSV File</label>
-                        <input type="file" class="form-control" id="csvFile" name="file" accept=".csv" required>
-                        <div class="form-text">Maximum file size: 16MB</div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-success btn-lg">Process Batch</button>
-                </form>
             </div>
             
-            <div class="col-md-4">
-                <div id="results" class="card" style="display: none;">
-                    <div class="card-header">
-                        <h5>Batch Processing Results</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <strong>Total Records:</strong> <span id="totalRecords"></span>
+            <!-- Results Section -->
+            <div class="col-lg-4">
+                <div class="results-container">
+                    <div id="results" style="display: none;">
+                        <div class="results-header">
+                            <h4 class="results-title">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Processing Results
+                            </h4>
                         </div>
                         
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between">
-                                <span>High Risk:</span>
-                                <span id="highRisk" class="badge bg-danger"></span>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Total Records</div>
+                                <div id="totalRecords" class="stat-value">0</div>
                             </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Medium Risk:</span>
-                                <span id="mediumRisk" class="badge bg-warning"></span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Low Risk:</span>
-                                <span id="lowRisk" class="badge bg-success"></span>
+                            <div class="stat-item">
+                                <div class="stat-label">Processing Time</div>
+                                <div class="stat-value">&lt; 5s</div>
                             </div>
                         </div>
                         
-                        <div id="riskChart" class="mb-3">
-                            <div class="progress mb-2">
+                        <div class="risk-breakdown">
+                            <div class="risk-item risk-high">
+                                <span><i class="fas fa-exclamation-triangle me-2"></i>High Risk</span>
+                                <span id="highRisk" class="badge bg-danger">0</span>
+                            </div>
+                            <div class="risk-item risk-medium">
+                                <span><i class="fas fa-exclamation-circle me-2"></i>Medium Risk</span>
+                                <span id="mediumRisk" class="badge bg-warning">0</span>
+                            </div>
+                            <div class="risk-item risk-low">
+                                <span><i class="fas fa-check-circle me-2"></i>Low Risk</span>
+                                <span id="lowRisk" class="badge bg-success">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-container">
+                            <div class="progress">
                                 <div id="lowRiskBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
                                 <div id="mediumRiskBar" class="progress-bar bg-warning" role="progressbar" style="width: 0%"></div>
                                 <div id="highRiskBar" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
                             </div>
                         </div>
                         
-                        <div class="mt-3">
-                            <button id="downloadBtn" class="btn btn-primary btn-sm">Download Results</button>
+                        <button id="downloadBtn" class="btn btn-download">
+                            <i class="fas fa-download me-2"></i>
+                            Download Results
+                        </button>
+                    </div>
+                    
+                    <div id="loading" class="loading-container" style="display: none;">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
+                        <div class="loading-text">Processing your batch file...</div>
+                        <div class="text-muted mt-2">This may take a few moments</div>
+                    </div>
+                    
+                    <div id="error" class="error-container" style="display: none;">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                        <div class="error-text"></div>
+                    </div>
+                    
+                    <div id="defaultMessage" class="text-center text-muted">
+                        <i class="fas fa-file-csv fa-4x mb-3" style="color: var(--secondary-color);"></i>
+                        <h5>Ready for Batch Processing</h5>
+                        <p>Upload your CSV file to get started with bulk risk assessment. Our AI will analyze all records and provide comprehensive results.</p>
                     </div>
                 </div>
-                
-                <div id="loading" class="text-center" style="display: none;">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p>Processing batch file...</p>
-                </div>
-                
-                <div id="error" class="alert alert-danger" style="display: none;"></div>
             </div>
+        </div>
         </div>
     </div>
 
@@ -139,10 +600,12 @@
             const loading = document.getElementById('loading');
             const results = document.getElementById('results');
             const error = document.getElementById('error');
+            const defaultMessage = document.getElementById('defaultMessage');
             
-            loading.style.display = 'block';
-            results.style.display = 'none';
-            error.style.display = 'none';
+            if (loading) loading.style.display = 'block';
+            if (results) results.style.display = 'none';
+            if (error) error.style.display = 'none';
+            if (defaultMessage) defaultMessage.style.display = 'none';
             
             const formData = new FormData(this);
             
@@ -162,25 +625,49 @@
                     document.getElementById('mediumRisk').textContent = result.medium_risk;
                     document.getElementById('lowRisk').textContent = result.low_risk;
                     
-                    // Update progress bars
+                    // Update progress bars with animation
                     const total = result.total_records;
                     const lowPct = (result.low_risk / total * 100).toFixed(1);
                     const mediumPct = (result.medium_risk / total * 100).toFixed(1);
                     const highPct = (result.high_risk / total * 100).toFixed(1);
                     
-                    document.getElementById('lowRiskBar').style.width = lowPct + '%';
-                    document.getElementById('mediumRiskBar').style.width = mediumPct + '%';
-                    document.getElementById('highRiskBar').style.width = highPct + '%';
+                    setTimeout(() => {
+                        document.getElementById('lowRiskBar').style.width = lowPct + '%';
+                        document.getElementById('mediumRiskBar').style.width = mediumPct + '%';
+                        document.getElementById('highRiskBar').style.width = highPct + '%';
+                    }, 500);
                     
                     results.style.display = 'block';
                 } else {
-                    error.textContent = result.error;
-                    error.style.display = 'block';
+                    const errorText = document.querySelector('.error-text');
+                    if (errorText) errorText.textContent = result.error;
+                    if (error) error.style.display = 'block';
                 }
             } catch (err) {
-                error.textContent = 'Error: ' + err.message;
-                error.style.display = 'block';
+                const errorText = document.querySelector('.error-text');
+                if (errorText) errorText.textContent = 'Network error: ' + err.message;
+                if (error) error.style.display = 'block';
             } finally {
+                if (loading) loading.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            if (csvData) {
+                const blob = new Blob([csvData], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'batch_risk_assessment_results.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }
+        });
+    </script>
+</body>
+</html>      } finally {
                 loading.style.display = 'none';
             }
         });
