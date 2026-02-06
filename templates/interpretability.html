@@ -30,7 +30,7 @@
             top: 0;
             left: 0;
             height: 100vh;
-            width: 280px;
+            width: 320px;
             background: linear-gradient(135deg, var(--primary-color), #34495e);
             color: white;
             z-index: 1000;
@@ -45,9 +45,20 @@
         }
         
         .sidebar-header h3 {
-            font-size: 1.3rem;
+            font-size: 1.8rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
+            animation: colorBlink 3s infinite;
+            text-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+        }
+        
+        @keyframes colorBlink {
+            0% { color: #00f5ff; }
+            20% { color: #ff00ff; }
+            40% { color: #ffff00; }
+            60% { color: #00ff00; }
+            80% { color: #ff6b00; }
+            100% { color: #00f5ff; }
         }
         
         .sidebar-header p {
@@ -86,7 +97,7 @@
         }
         
         .main-content {
-            margin-left: 280px;
+            margin-left: 320px;
             min-height: 100vh;
             transition: margin-left 0.3s ease;
         }
@@ -463,8 +474,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3><i class="fas fa-chart-line"></i>🏦 CreditScore AI</h3>
-            <p>Advanced Risk Assessment Platform</p>
+            <h3>CreditScore AI</h3>
         </div>
         
         <nav class="sidebar-nav">

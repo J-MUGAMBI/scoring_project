@@ -45,18 +45,30 @@
       .sidebar-header {
         padding: 2rem 1.5rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: center;
       }
 
       .sidebar-header h3 {
         margin: 0;
-        font-size: 1.4rem;
-        font-weight: 600;
+        font-size: 1.8rem;
+        font-weight: 700;
+        animation: colorBlink 3s infinite;
+        text-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
       }
 
       .sidebar-header p {
         margin: 0.5rem 0 0 0;
         font-size: 0.9rem;
         opacity: 0.8;
+      }
+      
+      @keyframes colorBlink {
+        0% { color: #00f5ff; }
+        20% { color: #ff00ff; }
+        40% { color: #ffff00; }
+        60% { color: #00ff00; }
+        80% { color: #ff6b00; }
+        100% { color: #00f5ff; }
       }
 
       .sidebar-nav {
@@ -253,7 +265,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-header">
-        <h3><i class="fas fa-chart-line"></i>🏦 CreditScore AI</h3>
+        <h3>CreditScore AI</h3>
         <p>Advanced Risk Assessment Platform</p>
       </div>
 
