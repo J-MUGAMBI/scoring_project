@@ -53,7 +53,9 @@
         font-size: 1.8rem;
         font-weight: 700;
         animation: colorBlink 3s infinite;
-        text-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+        text-shadow:
+          0 0 20px currentColor,
+          0 0 30px currentColor;
       }
 
       .sidebar-header p {
@@ -61,14 +63,26 @@
         font-size: 0.9rem;
         opacity: 0.8;
       }
-      
+
       @keyframes colorBlink {
-        0% { color: #00f5ff; }
-        20% { color: #ff00ff; }
-        40% { color: #ffff00; }
-        60% { color: #00ff00; }
-        80% { color: #ff6b00; }
-        100% { color: #00f5ff; }
+        0% {
+          color: #00f5ff;
+        }
+        20% {
+          color: #ff00ff;
+        }
+        40% {
+          color: #ffff00;
+        }
+        60% {
+          color: #00ff00;
+        }
+        80% {
+          color: #ff6b00;
+        }
+        100% {
+          color: #00f5ff;
+        }
       }
 
       .sidebar-nav {
@@ -308,8 +322,8 @@
         <p class="lead">
           Transform your lending decisions with AI-driven risk assessment. Our
           system provides real-time credit scoring, batch processing
-          capabilities, and transparent model interpretability to help you make
-          informed financial decisions.
+          capabilities, and credit repair to help you make informed financial
+          decisions.
         </p>
       </div>
 
@@ -400,7 +414,7 @@
             <div class="feature-icon text-warning">
               <i class="fas fa-microscope"></i>
             </div>
-            <h4>AI Interpretability</h4>
+            <h4>Credit Repair</h4>
             <p>
               Understand the 'why' behind every decision. Feature importance
               analysis and personalized recommendations for risk improvement.
@@ -414,7 +428,8 @@
                 Explanations
               </li>
               <li>
-                <i class="fas fa-check text-success me-2"></i>Recommendations
+                <i class="fas fa-check text-success me-2"></i>Credit Repair
+                Recommendations
               </li>
             </ul>
           </div>
@@ -429,10 +444,10 @@
             <div class="text-center p-4">
               <div class="display-1 text-success mb-3">🟢</div>
               <h4 class="text-success">Low Risk</h4>
-              <p>Probability &lt; 30%</p>
+              <p>Probability ≤ 3%</p>
               <p class="text-muted">
                 Excellent credit profile with minimal default risk. Recommended
-                for approval with standard terms.
+                for AUTO APPROVE with standard terms.
               </p>
             </div>
           </div>
@@ -440,10 +455,9 @@
             <div class="text-center p-4">
               <div class="display-1 text-warning mb-3">🟡</div>
               <h4 class="text-warning">Medium Risk</h4>
-              <p>30% ≤ Probability &lt; 60%</p>
+              <p>3% &lt; Probability ≤ 10%</p>
               <p class="text-muted">
-                Moderate risk profile requiring additional assessment. Consider
-                adjusted terms or monitoring.
+                Moderate risk profile requiring additional assessment. REFER / APPROVE WITH CONTROLS.
               </p>
             </div>
           </div>
@@ -451,9 +465,9 @@
             <div class="text-center p-4">
               <div class="display-1 text-danger mb-3">🔴</div>
               <h4 class="text-danger">High Risk</h4>
-              <p>Probability ≥ 60%</p>
+              <p>Probability &gt; 10%</p>
               <p class="text-muted">
-                Elevated default risk. Requires thorough review and risk
+                Elevated default risk. DECLINE - requires thorough review and risk
                 mitigation strategies.
               </p>
             </div>

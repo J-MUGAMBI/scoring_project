@@ -670,10 +670,10 @@
                     if (riskDisplay) riskDisplay.classList.remove('risk-low', 'risk-medium', 'risk-high');
                     
                     // Add appropriate styling and icon
-                    if (result.risk_category === 'Low Risk') {
+                    if (result.risk_category === 'LOW RISK') {
                         if (riskDisplay) riskDisplay.classList.add('risk-low');
                         if (riskIcon) riskIcon.className = 'risk-icon fas fa-check-circle';
-                    } else if (result.risk_category === 'Medium Risk') {
+                    } else if (result.risk_category === 'MEDIUM RISK') {
                         if (riskDisplay) riskDisplay.classList.add('risk-medium');
                         if (riskIcon) riskIcon.className = 'risk-icon fas fa-exclamation-triangle';
                     } else {

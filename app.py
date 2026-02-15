@@ -23,14 +23,23 @@ with open('threshold.json', 'r') as f:
     threshold_config = json.load(f)
     BEST_THRESHOLD = threshold_config['best_threshold']
 
-def get_risk_category(probability):
-    """Convert probability to risk category"""
-    if probability < 0.3:
-        return "Low Risk"
-    elif probability < 0.6:
-        return "Medium Risk"
+def decision_from_pd(pd):
+    """DECISION POLICY — ALIGNED TO EXCEL (OPTION A)"""
+    if pd > 0.10:
+        return {
+            "Risk_Class": "HIGH RISK",
+            "Decision": "DECLINE"
+        }
+    elif pd > 0.03:
+        return {
+            "Risk_Class": "MEDIUM RISK",
+            "Decision": "REFER / APPROVE WITH CONTROLS"
+        }
     else:
-        return "High Risk"
+        return {
+            "Risk_Class": "LOW RISK",
+            "Decision": "AUTO APPROVE"
+        }
 
 def prepare_input_data(data_dict):
     """Prepare input data for prediction"""
@@ -58,12 +67,13 @@ def predict():
         # Get prediction probability
         probability = model.predict_proba(input_df)[0][1]
         prediction = int(probability >= BEST_THRESHOLD)
-        risk_category = get_risk_category(probability)
+        decision_info = decision_from_pd(probability)
         
         return jsonify({
             'probability': float(probability),
             'prediction': prediction,
-            'risk_category': risk_category,
+            'risk_category': decision_info['Risk_Class'],
+            'decision': decision_info['Decision'],
             'threshold': BEST_THRESHOLD
         })
     except Exception as e:
@@ -97,13 +107,16 @@ def batch_predict():
         # Get predictions
         probabilities = model.predict_proba(input_data)[:, 1]
         predictions = (probabilities >= BEST_THRESHOLD).astype(int)
-        risk_categories = [get_risk_category(p) for p in probabilities]
+        decisions = [decision_from_pd(p) for p in probabilities]
+        risk_categories = [d['Risk_Class'] for d in decisions]
+        decision_labels = [d['Decision'] for d in decisions]
         
         # Create results dataframe
         results_df = df.copy()
         results_df['Probability'] = probabilities
         results_df['Prediction'] = predictions
         results_df['Risk_Category'] = risk_categories
+        results_df['Decision'] = decision_labels
         
         # Convert to CSV for download
         output = io.StringIO()
@@ -113,9 +126,9 @@ def batch_predict():
         return jsonify({
             'success': True,
             'total_records': len(df),
-            'high_risk': sum(1 for r in risk_categories if r == 'High Risk'),
-            'medium_risk': sum(1 for r in risk_categories if r == 'Medium Risk'),
-            'low_risk': sum(1 for r in risk_categories if r == 'Low Risk'),
+            'high_risk': sum(1 for r in risk_categories if r == 'HIGH RISK'),
+            'medium_risk': sum(1 for r in risk_categories if r == 'MEDIUM RISK'),
+            'low_risk': sum(1 for r in risk_categories if r == 'LOW RISK'),
             'csv_data': output.getvalue()
         })
     except Exception as e:
@@ -133,7 +146,8 @@ def explain_prediction():
         
         # Get prediction
         probability = model.predict_proba(input_df)[0][1]
-        risk_category = get_risk_category(probability)
+        decision_info = decision_from_pd(probability)
+        risk_category = decision_info['Risk_Class']
         
         # Get feature importances from the model
         # Handle both direct models and pipelines
@@ -195,7 +209,7 @@ def generate_recommendations(data, risk_category, top_features):
     """Generate recommendations based on risk category and feature values"""
     recommendations = []
     
-    if risk_category == "High Risk":
+    if risk_category == "HIGH RISK":
         recommendations.append("⚠️ High risk detected. Consider additional verification and monitoring.")
         
         # Check specific features and provide targeted advice
@@ -211,7 +225,7 @@ def generate_recommendations(data, risk_category, top_features):
         if data.get('Age', 0) < 25:
             recommendations.append("• Young age may be a factor - consider building credit history")
         
-    elif risk_category == "Medium Risk":
+    elif risk_category == "MEDIUM RISK":
         recommendations.append("⚡ Medium risk. Monitor closely and consider risk mitigation measures.")
         
         if data.get('SavingAcctDepositCount', 0) < 10:
