@@ -254,11 +254,27 @@
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(15px);
         border-radius: 25px;
-        padding: 2.5rem;
+        padding: 2rem;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         position: sticky;
         top: 2rem;
         border: 1px solid rgba(255, 255, 255, 0.3);
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .results-container::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .results-container::-webkit-scrollbar-track {
+        background: rgba(155, 89, 182, 0.1);
+        border-radius: 10px;
+      }
+
+      .results-container::-webkit-scrollbar-thumb {
+        background: var(--secondary-color);
+        border-radius: 10px;
       }
 
       .results-header {
@@ -341,18 +357,18 @@
 
       .feature-plot-container {
         background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        border-radius: 20px;
-        padding: 2rem;
-        margin: 2rem 0;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
         text-align: center;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
       }
 
       .feature-plot-title {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
         font-weight: 600;
         color: var(--primary-color);
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -377,18 +393,48 @@
           rgba(142, 68, 173, 0.1)
         );
         border-radius: 20px;
-        padding: 2rem;
+        padding: 1.5rem;
         margin-top: 2rem;
         border: 2px solid rgba(155, 89, 182, 0.2);
+        max-height: 500px;
+        overflow-y: auto;
+      }
+
+      .recommendations-container::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .recommendations-container::-webkit-scrollbar-track {
+        background: rgba(155, 89, 182, 0.1);
+        border-radius: 10px;
+      }
+
+      .recommendations-container::-webkit-scrollbar-thumb {
+        background: var(--secondary-color);
+        border-radius: 10px;
+      }
+
+      .recommendations-container::-webkit-scrollbar-thumb:hover {
+        background: #8e44ad;
       }
 
       .recommendations-title {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
         font-weight: 600;
         color: var(--primary-color);
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         display: flex;
         align-items: center;
+        position: sticky;
+        top: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(155, 89, 182, 0.15),
+          rgba(142, 68, 173, 0.15)
+        );
+        padding: 0.5rem;
+        border-radius: 10px;
+        z-index: 10;
       }
 
       .recommendations-title i {
@@ -398,12 +444,62 @@
 
       .recommendation-item {
         background: white;
-        padding: 1rem 1.5rem;
+        padding: 1rem;
         margin-bottom: 0.8rem;
         border-radius: 10px;
-        border-left: 4px solid var(--secondary-color);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
+      }
+
+      .recommendation-item:hover {
+        transform: translateX(3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .rec-success {
+        border-left: 5px solid var(--success-color);
+        background: linear-gradient(to right, rgba(39, 174, 96, 0.05), white);
+      }
+
+      .rec-warning {
+        border-left: 5px solid var(--warning-color);
+        background: linear-gradient(to right, rgba(243, 156, 18, 0.05), white);
+      }
+
+      .rec-danger {
+        border-left: 5px solid var(--accent-color);
+        background: linear-gradient(to right, rgba(231, 76, 60, 0.05), white);
+      }
+
+      .rec-info {
+        border-left: 5px solid var(--secondary-color);
+        background: linear-gradient(to right, rgba(155, 89, 182, 0.05), white);
+      }
+
+      .rec-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.3rem;
+      }
+
+      .rec-icon {
+        font-size: 1.2rem;
+        margin-right: 0.6rem;
+      }
+
+      .rec-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0;
+      }
+
+      .rec-message {
+        font-size: 0.85rem;
+        color: #555;
+        line-height: 1.5;
+        margin: 0;
+        padding-left: 1.8rem;
       }
 
       .loading-container {
@@ -919,15 +1015,49 @@
               document.getElementById("featurePlot").src =
                 "data:image/png;base64," + result.feature_plot;
 
-              // Update recommendations
+              // Update recommendations with structured display
               const recommendationsDiv =
                 document.getElementById("recommendations");
               recommendationsDiv.innerHTML = "";
 
               result.recommendations.forEach((rec) => {
                 const div = document.createElement("div");
-                div.className = "recommendation-item";
-                div.textContent = rec;
+                
+                // Determine styling based on recommendation type
+                let iconClass = "";
+                let recClass = "recommendation-item ";
+                
+                if (rec.type === "success") {
+                  recClass += "rec-success";
+                  iconClass = "fas fa-check-circle text-success";
+                } else if (rec.type === "warning") {
+                  recClass += "rec-warning";
+                  iconClass = "fas fa-exclamation-triangle text-warning";
+                } else if (rec.type === "danger" || rec.type === "critical") {
+                  recClass += "rec-danger";
+                  iconClass = "fas fa-exclamation-circle text-danger";
+                } else if (rec.type === "maintain") {
+                  recClass += "rec-success";
+                  iconClass = "fas fa-thumbs-up text-success";
+                } else if (rec.type === "improve") {
+                  recClass += "rec-warning";
+                  iconClass = "fas fa-arrow-up text-warning";
+                } else if (rec.type === "tip") {
+                  recClass += "rec-info";
+                  iconClass = "fas fa-lightbulb text-info";
+                } else {
+                  recClass += "rec-info";
+                  iconClass = "fas fa-info-circle text-info";
+                }
+                
+                div.className = recClass;
+                div.innerHTML = `
+                  <div class="rec-header">
+                    <i class="${iconClass} rec-icon"></i>
+                    <h6 class="rec-title">${rec.title}</h6>
+                  </div>
+                  <p class="rec-message">${rec.message}</p>
+                `;
                 recommendationsDiv.appendChild(div);
               });
 
