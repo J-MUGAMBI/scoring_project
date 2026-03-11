@@ -3,7 +3,8 @@ import json
 import pandas as pd
 import numpy as np
 import joblib
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, session, redirect, url_for
+from functools import wraps
 import io
 import base64
 import matplotlib
@@ -11,9 +12,38 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
+import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.secret_key = 'your-secret-key-change-this-in-production'  # Change this!
+
+# Initialize database
+def init_db():
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  full_name TEXT NOT NULL,
+                  email TEXT UNIQUE NOT NULL,
+                  username TEXT UNIQUE NOT NULL,
+                  password TEXT NOT NULL,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# Login required decorator
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Load model and configuration
 model = joblib.load('model.joblib')
@@ -50,15 +80,91 @@ def prepare_input_data(data_dict):
             df[feature] = 0
     return df[features]
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        return render_template('register.html')
+    
+    try:
+        data = request.json
+        full_name = data.get('fullName')
+        email = data.get('email')
+        username = data.get('username')
+        password = data.get('password')
+        
+        # Validate input
+        if not all([full_name, email, username, password]):
+            return jsonify({'error': 'All fields are required'}), 400
+        
+        if len(password) < 8:
+            return jsonify({'error': 'Password must be at least 8 characters'}), 400
+        
+        # Hash password
+        hashed_password = generate_password_hash(password)
+        
+        # Insert into database
+        conn = sqlite3.connect('users.db')
+        c = conn.cursor()
+        try:
+            c.execute('INSERT INTO users (full_name, email, username, password) VALUES (?, ?, ?, ?)',
+                     (full_name, email, username, hashed_password))
+            conn.commit()
+            return jsonify({'success': True, 'message': 'Registration successful'})
+        except sqlite3.IntegrityError:
+            return jsonify({'error': 'Username or email already exists'}), 400
+        finally:
+            conn.close()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+    
+    try:
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+        
+        if not all([username, password]):
+            return jsonify({'error': 'Username and password are required'}), 400
+        
+        # Check database
+        conn = sqlite3.connect('users.db')
+        c = conn.cursor()
+        c.execute('SELECT id, username, password, full_name FROM users WHERE username = ? OR email = ?',
+                 (username, username))
+        user = c.fetchone()
+        conn.close()
+        
+        if user and check_password_hash(user[2], password):
+            session['user_id'] = user[0]
+            session['username'] = user[1]
+            session['full_name'] = user[3]
+            return jsonify({'success': True, 'message': 'Login successful'})
+        else:
+            return jsonify({'error': 'Invalid username or password'}), 401
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
 @app.route('/')
+@login_required
 def home():
-    return render_template('index.html')
+    return render_template('index.html', user=session.get('full_name'))
 
 @app.route('/individual')
+@login_required
 def individual_scoring():
     return render_template('individual.html', features=features)
 
 @app.route('/predict', methods=['POST'])
+@login_required
 def predict():
     try:
         data = request.json
@@ -80,10 +186,12 @@ def predict():
         return jsonify({'error': str(e)}), 400
 
 @app.route('/batch')
+@login_required
 def batch_scoring():
     return render_template('batch.html')
 
 @app.route('/batch_predict', methods=['POST'])
+@login_required
 def batch_predict():
     try:
         if 'file' not in request.files:
@@ -135,10 +243,12 @@ def batch_predict():
         return jsonify({'error': str(e)}), 400
 
 @app.route('/interpretability')
+@login_required
 def interpretability():
     return render_template('interpretability.html', features=features)
 
 @app.route('/explain', methods=['POST'])
+@login_required
 def explain_prediction():
     try:
         data = request.json
