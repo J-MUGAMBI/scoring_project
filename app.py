@@ -11,6 +11,9 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly.io as pio
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
@@ -52,6 +55,36 @@ with open('feature_list.json', 'r') as f:
 with open('threshold.json', 'r') as f:
     threshold_config = json.load(f)
     BEST_THRESHOLD = threshold_config['best_threshold']
+
+REQUIRED_ANALYSIS_COLUMNS = [
+    'CRR_NARRATION',
+    'Max_REMAINING_TENOR(AllLoans)',
+    'RUNNING_LOANS_COUNT',
+    'Exposure_Amount',
+    'NetIncome',
+    'OnUsEMI',
+    'DrTurnover',
+    'TotalAssets',
+    'MobileTotal',
+    'MaxArrears',
+    'CurrentArrears',
+    'NonPerforming',
+    'Gender',
+    'SavingAcctDepositCount',
+    'Age',
+    'EmployerStrength',
+    'SECTOR',
+    'CUSTOMER_SUBSEGMENT_NAME',
+    'NATIONALITY',
+    'EMPLOYEMENT_STATUS',
+    'MARITAL_STATUS',
+    'AML_RISK_CLASS',
+    'CustomerTenure'
+]
+
+def fig_to_json_dict(fig):
+    """Convert a Plotly figure to a pure Python dict safe for jsonify."""
+    return json.loads(pio.to_json(fig))
 
 def decision_from_pd(pd):
     """DECISION POLICY — ALIGNED TO EXCEL (OPTION A)"""
@@ -238,6 +271,145 @@ def batch_predict():
             'medium_risk': sum(1 for r in risk_categories if r == 'MEDIUM RISK'),
             'low_risk': sum(1 for r in risk_categories if r == 'LOW RISK'),
             'csv_data': output.getvalue()
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/data_analysis')
+@login_required
+def data_analysis():
+    return render_template('data_analysis.html')
+
+@app.route('/data_analysis_upload', methods=['POST'])
+@login_required
+def data_analysis_upload():
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+
+        df = pd.read_csv(file)
+
+        missing_columns = [col for col in REQUIRED_ANALYSIS_COLUMNS if col not in df.columns]
+        if missing_columns:
+            return jsonify({
+                'error': f'Missing required columns: {missing_columns}'
+            }), 400
+
+        df = df[REQUIRED_ANALYSIS_COLUMNS].copy()
+
+        # Use only a sample for very large datasets to keep analysis fast
+        if len(df) > 5000:
+            df_sample = df.sample(5000, random_state=42)
+        else:
+            df_sample = df
+
+        # Summary statistics on numeric columns only for speed and clarity
+        numeric_df = df_sample.select_dtypes(include=[np.number])
+        summary_table_html = numeric_df.describe().transpose().to_html(
+            classes='table table-striped table-sm table-bordered',
+            border=0
+        )
+
+        plots = {}
+
+        if 'Gender' in df_sample.columns:
+            gender_counts = df_sample['Gender'].value_counts().reset_index()
+            gender_counts.columns = ['Gender', 'Count']
+            fig_gender = px.pie(
+                gender_counts,
+                names='Gender',
+                values='Count',
+                title='<b>Gender Distribution</b>'
+            )
+            fig_gender.update_traces(textposition='inside', textinfo='percent+label')
+            plots['gender_pie'] = fig_to_json_dict(fig_gender)
+
+        if 'SECTOR' in df_sample.columns:
+            sector_counts = df_sample['SECTOR'].value_counts().nlargest(10).reset_index()
+            sector_counts.columns = ['SECTOR', 'Count']
+            fig_sector = px.bar(
+                sector_counts,
+                x='SECTOR',
+                y='Count',
+                title='<b>Customers by Sector</b>'
+            )
+            fig_sector.update_layout(
+                xaxis_title='<b>Sector</b>',
+                yaxis_title='<b>Number of Customers</b>'
+            )
+            plots['sector_bar'] = fig_to_json_dict(fig_sector)
+
+        if 'NetIncome' in df_sample.columns and 'SECTOR' in df_sample.columns:
+            income_sector = df_sample.groupby('SECTOR', as_index=False)['NetIncome'].mean()
+            fig_income = px.bar(
+                income_sector,
+                x='SECTOR',
+                y='NetIncome',
+                title='<b>Average Net Income by Sector</b>'
+            )
+            fig_income.update_layout(
+                xaxis_title='<b>Sector</b>',
+                yaxis_title='<b>Average Net Income</b>'
+            )
+            plots['income_sector_bar'] = fig_to_json_dict(fig_income)
+
+        if 'Gender' in df_sample.columns and 'NonPerforming' in df_sample.columns:
+            nonperf_gender = df_sample.groupby(['Gender', 'NonPerforming']).size().reset_index(name='Count')
+            fig_nonperf = px.bar(
+                nonperf_gender,
+                x='Gender',
+                y='Count',
+                color='NonPerforming',
+                barmode='stack',
+                title='<b>Non-Performing Loans by Gender</b>'
+            )
+            fig_nonperf.update_layout(
+                xaxis_title='<b>Gender</b>',
+                yaxis_title='<b>Number of Accounts</b>',
+                legend_title='<b>Non-Performing</b>'
+            )
+            plots['nonperforming_gender_stacked'] = fig_to_json_dict(fig_nonperf)
+
+        if 'Age' in df_sample.columns:
+            age_series = df_sample['Age'].dropna()
+            if not age_series.empty:
+                age_bins = pd.cut(age_series, bins=5)
+                age_counts = age_bins.value_counts().sort_index().reset_index()
+                age_counts.columns = ['AgeRange', 'Count']
+                age_counts['AgeRange'] = age_counts['AgeRange'].astype(str)
+
+                fig_age_bins = px.bar(
+                    age_counts,
+                    x='AgeRange',
+                    y='Count',
+                    title='<b>Age Distribution (5 Bins)</b>'
+                )
+                fig_age_bins.update_layout(
+                    xaxis_title='<b>Age Range</b>',
+                    yaxis_title='<b>Number of Customers</b>'
+                )
+                plots['age_bins'] = fig_to_json_dict(fig_age_bins)
+
+        if 'AML_RISK_CLASS' in df_sample.columns:
+            aml_counts = df_sample['AML_RISK_CLASS'].value_counts().reset_index()
+            aml_counts.columns = ['AML_RISK_CLASS', 'Count']
+            fig_aml = px.pie(
+                aml_counts,
+                names='AML_RISK_CLASS',
+                values='Count',
+                title='<b>AML Risk Class Distribution</b>'
+            )
+            fig_aml.update_traces(textposition='inside', textinfo='percent+label')
+            plots['aml_risk_pie'] = fig_to_json_dict(fig_aml)
+
+        return jsonify({
+            'success': True,
+            'summary_table': summary_table_html,
+            'plots': plots
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 400

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Analysis - Credit Risk Scorer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a252f;
+            --secondary-color: #9b59b6;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 50%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 320px;
+            background: linear-gradient(135deg, var(--primary-color), #34495e);
+            color: white;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .sidebar-header h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            animation: colorBlink 3s infinite;
+            text-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+        }
+
+        @keyframes colorBlink {
+            0% { color: #00f5ff; }
+            20% { color: #ff00ff; }
+            40% { color: #ffff00; }
+            60% { color: #00ff00; }
+            80% { color: #ff6b00; }
+            100% { color: #00f5ff; }
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            border-left-color: var(--secondary-color);
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 1rem;
+        }
+
+        .main-content {
+            margin-left: 320px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: rgba(255,255,255,0.95);
+            border-radius: 24px;
+            padding: 1.8rem;
+            margin: 1.5rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 0;
+        }
+
+        .analysis-layout {
+            padding: 0 1.5rem 2rem 1.5rem;
+        }
+
+        .upload-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.4);
+            margin-bottom: 2rem;
+        }
+
+        .upload-zone {
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.05));
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .upload-zone:hover {
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+                0 12px 30px rgba(0, 0, 0, 0.18);
+            transform: translateY(-2px);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .upload-subtext {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .btn-analyze {
+            background: linear-gradient(135deg, var(--secondary-color), #8e44ad);
+            border: none;
+            padding: 0.9rem 2.4rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 999px;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 22px rgba(155, 89, 182, 0.35);
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(155, 89, 182, 0.45);
+            color: white;
+        }
+
+        .analysis-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .summary-card,
+        .charts-card {
+            background: rgba(255,255,255,0.96);
+            border-radius: 24px;
+            padding: 1.8rem;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        .section-heading {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-heading i {
+            color: var(--secondary-color);
+        }
+
+        .summary-table-wrapper {
+            max-height: 450px;
+            overflow: auto;
+        }
+
+        .charts-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .chart-panel {
+            background: #f8f9fa;
+            border-radius: 18px;
+            padding: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .chart-body {
+            min-height: 420px;
+        }
+
+        .status-text {
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 1.5rem 0;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .analysis-grid {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>CreditScore AI</h3>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/individual" class="nav-link">
+                    <i class="fas fa-user"></i>
+                    Individual Scoring
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/batch" class="nav-link">
+                    <i class="fas fa-upload"></i>
+                    Batch Scoring
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/data_analysis" class="nav-link active">
+                    <i class="fas fa-chart-bar"></i>
+                    Data Analysis
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/interpretability" class="nav-link">
+                    <i class="fas fa-brain"></i>
+                    AI Interpretability
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-chart-pie me-2"></i>
+                Data Analysis & Insights
+            </h1>
+            <p class="page-subtitle">
+                Upload your dataset to view vivid Plotly-based exploratory analysis and summary statistics for all key credit risk features.
+            </p>
+        </div>
+
+        <div class="analysis-layout">
+            <div class="upload-card">
+                <form id="analysisForm" enctype="multipart/form-data">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-lg-8">
+                            <div class="upload-zone">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="upload-text">Drop CSV file or click to browse</div>
+                                <div class="upload-subtext">
+                                    CSV file with customer-level credit data (no headers need to be shown here).
+                                </div>
+                                <div class="mt-3 d-flex justify-content-center">
+                                    <input
+                                        type="file"
+                                        class="form-control"
+                                        id="analysisFile"
+                                        name="file"
+                                        accept=".csv"
+                                        required
+                                        style="max-width: 320px; border-radius: 999px;"
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 text-center text-lg-start mt-3 mt-lg-0">
+                            <button type="submit" class="btn-analyze pulse">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Run Data Analysis
+                            </button>
+                            <div id="statusText" class="status-text mt-2">
+                                Upload a CSV file to begin analysis.
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="analysis-grid">
+                <div class="summary-card">
+                    <div class="section-heading">
+                        <i class="fas fa-table"></i>
+                        <span>Summary Statistics</span>
+                    </div>
+                    <div id="summaryContainer" class="summary-table-wrapper">
+                    </div>
+                </div>
+
+                <div class="charts-card">
+                    <div class="section-heading">
+                        <i class="fas fa-chart-area"></i>
+                        <span>Visual Exploratory Analysis</span>
+                    </div>
+                    <div id="chartsContainer" class="charts-grid">
+                        <div class="chart-panel">
+                            <div class="chart-title">
+                                <i class="fas fa-venus-mars"></i>
+                                <span>Gender Distribution</span>
+                            </div>
+                            <div id="gender_pie" class="chart-body"></div>
+                        </div>
+                        <div class="chart-panel">
+                            <div class="chart-title">
+                                <i class="fas fa-industry"></i>
+                                <span>Customers by Sector</span>
+                            </div>
+                            <div id="sector_bar" class="chart-body"></div>
+                        </div>
+                        <div class="chart-panel">
+                            <div class="chart-title">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <span>Average Net Income by Sector</span>
+                            </div>
+                            <div id="income_sector_bar" class="chart-body"></div>
+                        </div>
+                        <div class="chart-panel">
+                            <div class="chart-title">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>Non-Performing Loans by Gender</span>
+                            </div>
+                            <div id="nonperforming_gender_stacked" class="chart-body"></div>
+                        </div>
+                        <div class="chart-panel">
+                            <div class="chart-title">
+                                <i class="fas fa-user-clock"></i>
+                                <span>Age Distribution (5 Bins)</span>
+                            </div>
+                            <div id="age_bins" class="chart-body"></div>
+                        </div>
+                        <div class="chart-panel">
+                            <div class="chart-title">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>AML Risk Class Distribution</span>
+                            </div>
+                            <div id="aml_risk_pie" class="chart-body"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const form = document.getElementById('analysisForm');
+        const statusText = document.getElementById('statusText');
+        const summaryContainer = document.getElementById('summaryContainer');
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            statusText.textContent = 'Running analysis on your dataset...';
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/data_analysis_upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    statusText.textContent = 'Error: ' + (result.error || 'Unable to analyze dataset.');
+                    return;
+                }
+
+                if (result.summary_table) {
+                    summaryContainer.innerHTML = result.summary_table;
+                } else {
+                    summaryContainer.innerHTML = '<div class="text-muted">No summary statistics available.</div>';
+                }
+
+                if (result.plots && typeof Plotly !== 'undefined') {
+                    Object.entries(result.plots).forEach(([key, fig]) => {
+                        const target = document.getElementById(key);
+                        if (target && fig && fig.data) {
+                            // Render Plotly chart into the existing container
+                            Plotly.react(target, fig.data, fig.layout || {});
+                        }
+                    });
+
+                    if (Object.keys(result.plots).length === 0) {
+                        statusText.textContent = 'Analysis complete, but no plots could be generated from this dataset.';
+                    }
+                }
+
+                statusText.textContent = 'Analysis complete. Scroll to explore the charts and statistics.';
+            } catch (err) {
+                statusText.textContent = 'Network error: ' + err.message;
+            }
+        });
+    </script>
+</body>
+</html>
+
