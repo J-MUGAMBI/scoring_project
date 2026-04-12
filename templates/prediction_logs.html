@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Logs - Credit Risk Scorer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 320px;
+            background: linear-gradient(135deg, var(--primary-color), #34495e);
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .sidebar-header { padding: 2rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .sidebar-header h3 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .sidebar-nav { padding: 1rem 0; }
+        .nav-item { margin-bottom: 0.5rem; }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            border-left-color: var(--secondary-color);
+        }
+        .nav-link i { width: 20px; margin-right: 1rem; }
+        .main-content { margin-left: 320px; min-height: 100vh; padding: 1.5rem; }
+        .log-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .table-wrap { overflow-x: auto; }
+        .badge-type { text-transform: capitalize; }
+        .preview-cell { min-width: 200px; font-size: 0.85rem; }
+        .batch-stat { font-size: 0.9rem; line-height: 1.45; }
+        .tier-badge { font-size: 0.75rem; }
+        #loadError { display: none; }
+        #tablesModal .modal-content { border: none; border-radius: 16px; overflow: hidden; }
+        #tablesModal .modal-header { background: linear-gradient(135deg, #1e293b, #334155); color: #fff; border: none; }
+        #tablesModal .modal-header .btn-close { filter: invert(1); }
+        #tablesModal .modal-body { background: #f1f5f9; padding: 1.25rem 1.5rem 1.75rem; }
+        .batch-section-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            margin-bottom: 0.65rem;
+        }
+        .batch-table-row { margin-left: 0; margin-right: 0; }
+        .batch-mini-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08) !important;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+        .batch-mini-card .card-header { border: none; }
+        .batch-mini-card .card-header.tier-high {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #7f1d1d;
+        }
+        .batch-mini-card .card-header.tier-med {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #78350f;
+        }
+        .batch-mini-card .card-header.tier-low {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #064e3b;
+        }
+        .batch-mini-card .card-header.mc-def {
+            background: linear-gradient(135deg, #fecdd3 0%, #fda4af 100%);
+            color: #881337;
+        }
+        .batch-mini-card .card-header.mc-ok {
+            background: linear-gradient(135deg, #bbf7d0 0%, #6ee7b7 100%);
+            color: #14532d;
+        }
+        .batch-mini-card .table { margin-bottom: 0; font-size: 0.8rem; }
+        .batch-mini-card .table thead th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 0.6rem 0.45rem;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        .batch-mini-card .table tbody td {
+            padding: 0.45rem 0.45rem;
+            vertical-align: middle;
+            border-color: #f1f5f9;
+        }
+        .batch-mini-card .table tbody tr:hover { background: #fafafa; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>CreditScore AI</h3>
+            <p style="opacity:0.85;font-size:0.9rem;margin:0;">Prediction history</p>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+            </div>
+            <div class="nav-item">
+                <a href="/individual" class="nav-link"><i class="fas fa-user"></i> Individual Scoring</a>
+            </div>
+            <div class="nav-item">
+                <a href="/batch" class="nav-link"><i class="fas fa-upload"></i> Batch Scoring</a>
+            </div>
+            <div class="nav-item">
+                <a href="/data_analysis" class="nav-link"><i class="fas fa-chart-bar"></i> Data Analysis</a>
+            </div>
+            <div class="nav-item">
+                <a href="/prediction_logs" class="nav-link active"><i class="fas fa-history"></i> Prediction Logs</a>
+            </div>
+            <div class="nav-item">
+                <a href="/interpretability" class="nav-link"><i class="fas fa-brain"></i> AI Interpretability</a>
+            </div>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="log-card">
+            <h1 class="h3 mb-3"><i class="fas fa-clipboard-list me-2 text-primary"></i> Your prediction logs</h1>
+            <p class="text-muted mb-4">Batch predictions are stored in the database. Open <strong>Customer tables</strong> to load grouped rows (by model class and risk tier) automatically—no file upload needed for new runs.</p>
+            <div id="loadError" class="alert alert-danger"></div>
+            <div id="loading" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Loading logs…</p>
+            </div>
+            <div id="logTableWrap" class="table-wrap" style="display:none;">
+                <p class="small text-muted mb-2" id="logCount"></p>
+                <table class="table table-sm table-hover table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Time</th>
+                            <th>Type</th>
+                            <th>Model class (default vs no default)</th>
+                            <th>Risk tiers (H / M / L)</th>
+                            <th>Decision / threshold</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="previewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewModalTitle">Log details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body"><pre id="previewBody" class="small mb-0" style="white-space: pre-wrap;"></pre></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="tablesModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-fullscreen-lg-down modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tablesModalTitle"><i class="fas fa-table me-2"></i>Batch customer tables</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="tablesModalBody">
+                    <div id="tablesModalLoading" class="text-center py-5 text-muted">Loading…</div>
+                    <div id="tablesModalContent" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function escapeHtml(s) {
+            if (s === null || s === undefined) return '';
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+        var NAIROBI_TZ = 'Africa/Nairobi';
+        function parseLogInstant(iso) {
+            if (!iso) return null;
+            var s = String(iso).trim();
+            if (!s) return null;
+            if (s.indexOf('T') < 0 && s.length >= 19) {
+                s = s.replace(' ', 'T');
+            }
+            if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s) && !/[zZ]|[+-]\d{2}:?\d{2}$/.test(s)) {
+                s = s + 'Z';
+            }
+            var d = new Date(s);
+            return isNaN(d.getTime()) ? null : d;
+        }
+        function fmtTime(iso) {
+            if (!iso) return '—';
+            var d = parseLogInstant(iso);
+            if (!d) return String(iso);
+            return new Intl.DateTimeFormat('en-KE', {
+                timeZone: NAIROBI_TZ,
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            }).format(d);
+        }
+        function fmtProb(p) {
+            if (p === null || p === undefined) return '—';
+            return (Number(p) * 100).toFixed(2) + '%';
+        }
+        function fmtThreshold(t) {
+            if (t === null || t === undefined) return '—';
+            return (Number(t) * 100).toFixed(2) + '%';
+        }
+        function groupRows(group) {
+            if (!group) return [];
+            if (Array.isArray(group)) return group;
+            if (group.rows) return group.rows;
+            return [];
+        }
+        function groupCaption(group) {
+            if (!group || group.total_in_group == null) return '';
+            const shown = group.shown != null ? group.shown : groupRows(group).length;
+            return 'Showing <strong>' + shown + '</strong> of <strong>' + group.total_in_group + '</strong> in this group';
+        }
+        var BATCH_TABLE_COLS = [
+            { k: 'CustomerID', label: 'Customer ID' },
+            { k: 'Probability', label: 'Probability' },
+            { k: 'Prediction', label: 'Prediction' },
+            { k: 'Risk_Category', label: 'Risk category' },
+            { k: 'Decision', label: 'Decision' }
+        ];
+        function formatBatchTableCell(colKey, val) {
+            if (val === null || val === undefined || val === '') {
+                return '<span class="text-muted">—</span>';
+            }
+            if (colKey === 'Probability') {
+                var n = Number(val);
+                if (!isNaN(n)) {
+                    return escapeHtml((n * 100).toFixed(2) + '%');
+                }
+            }
+            return escapeHtml(String(val));
+        }
+        function renderRecordsTable(records) {
+            if (!records || !records.length) {
+                return '<p class="text-muted small mb-0 px-3 py-3">No rows.</p>';
+            }
+            var h = '<div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead><tr>';
+            BATCH_TABLE_COLS.forEach(function (c) {
+                h += '<th>' + escapeHtml(c.label) + '</th>';
+            });
+            h += '</tr></thead><tbody>';
+            records.forEach(function (row) {
+                h += '<tr>';
+                BATCH_TABLE_COLS.forEach(function (c) {
+                    h += '<td>' + formatBatchTableCell(c.k, row[c.k]) + '</td>';
+                });
+                h += '</tr>';
+            });
+            h += '</tbody></table></div>';
+            return h;
+        }
+        function renderGroupCard(title, headerClass, group) {
+            const recs = groupRows(group);
+            const cap = groupCaption(group);
+            return '<div class="card batch-mini-card h-100 w-100">' +
+                '<div class="card-header ' + headerClass + ' py-3">' +
+                '<h6 class="mb-0 fw-semibold" style="font-size:0.95rem;">' + escapeHtml(title) + '</h6>' +
+                (cap ? '<div class="small mt-2" style="opacity:0.9;">' + cap + '</div>' : '') +
+                '</div><div class="card-body p-0">' + renderRecordsTable(recs) + '</div></div>';
+        }
+        function buildTablesHtml(ct) {
+            if (!ct || ct.omitted) {
+                var reason = ct && ct.reason
+                    ? escapeHtml(ct.reason)
+                    : 'No per-row predictions are stored for this entry.';
+                var goBatch = '<p class="mb-0 mt-2"><a href="/batch" class="btn btn-sm btn-outline-primary"><i class="fas fa-upload me-1"></i>Run Batch scoring</a> ' +
+                    '<span class="small text-muted">to create a new log; predictions are saved automatically.</span></p>';
+                return '<div class="alert alert-warning mb-0">' + reason + '</div>' + goBatch;
+            }
+            if (ct.error) {
+                return '<div class="alert alert-danger mb-0">Could not build tables: <code>' + escapeHtml(ct.error) + '</code></div>';
+            }
+            const trunc = ct.truncated ? '<div class="alert alert-info py-2 small mb-3 border-0 shadow-sm">Some groups list fewer rows than the total in that class (storage cap per section: ' +
+                (ct.max_rows_per_section || '—') + ').</div>' : '';
+            const mc = ct.by_model_class || {};
+            const rt = ct.by_risk_tier || {};
+            const rtBlock =
+                '<div class="batch-section-title"><i class="fas fa-chart-pie me-1"></i> Policy risk tier</div>' +
+                '<div class="row g-3 align-items-stretch batch-table-row mb-4">' +
+                '<div class="col-md-4 d-flex align-items-stretch">' +
+                renderGroupCard('HIGH RISK', 'tier-high', rt['HIGH RISK']) + '</div>' +
+                '<div class="col-md-4 d-flex align-items-stretch">' +
+                renderGroupCard('MEDIUM RISK', 'tier-med', rt['MEDIUM RISK']) + '</div>' +
+                '<div class="col-md-4 d-flex align-items-stretch">' +
+                renderGroupCard('LOW RISK', 'tier-low', rt['LOW RISK']) + '</div>' +
+                '</div>';
+            const mcBlock =
+                '<div class="batch-section-title"><i class="fas fa-layer-group me-1"></i> Model class (threshold cutoff)</div>' +
+                '<div class="row g-3 align-items-stretch batch-table-row">' +
+                '<div class="col-md-6 d-flex align-items-stretch">' +
+                renderGroupCard('Default risk (class 1)', 'mc-def', mc.default_risk) + '</div>' +
+                '<div class="col-md-6 d-flex align-items-stretch">' +
+                renderGroupCard('No default (class 0)', 'mc-ok', mc.no_default) + '</div>' +
+                '</div>';
+            return trunc + rtBlock + mcBlock;
+        }
+        function batchClassCell(row) {
+            const total = row.batch_total_records;
+            const d = row.batch_pred_default;
+            const nd = row.batch_pred_no_default;
+            if (d != null && nd != null) {
+                return '<div class="batch-stat">' +
+                    '<div><span class="text-danger fw-semibold">' + d + '</span> default risk <span class="text-muted">(class 1)</span></div>' +
+                    '<div><span class="text-success fw-semibold">' + nd + '</span> no default <span class="text-muted">(class 0)</span></div>' +
+                    (total != null ? '<div class="small text-muted mt-1">' + total + ' rows scored</div>' : '') +
+                    '</div>';
+            }
+            if (total != null) {
+                return '<span class="text-muted">' + total + ' rows (older log — class counts only)</span>';
+            }
+            return '—';
+        }
+        function batchTierCell(row) {
+            if (row.log_type !== 'batch') return '—';
+            const h = row.batch_high_risk, m = row.batch_medium_risk, l = row.batch_low_risk;
+            if (h == null && m == null && l == null) return '—';
+            return '<div class="d-flex flex-wrap gap-1">' +
+                '<span class="badge bg-danger tier-badge">High ' + (h != null ? h : '—') + '</span>' +
+                '<span class="badge bg-warning text-dark tier-badge">Med ' + (m != null ? m : '—') + '</span>' +
+                '<span class="badge bg-success tier-badge">Low ' + (l != null ? l : '—') + '</span>' +
+                '</div><div class="small text-muted mt-1">PD policy bands</div>';
+        }
+        function decisionCell(row) {
+            if (row.log_type === 'batch') {
+                return '<div class="small">Cutoff <strong>' + fmtThreshold(row.threshold) + '</strong></div>' +
+                    '<div class="small text-muted">Use <strong>Customer tables</strong> for per-account rows</div>';
+            }
+            return (row.decision_label || '—') + (row.threshold != null
+                ? '<div class="small text-muted">Threshold ' + fmtThreshold(row.threshold) + '</div>'
+                : '');
+        }
+        function modelClassCell(row) {
+            if (row.log_type === 'batch') return batchClassCell(row);
+            const prob = fmtProb(row.probability);
+            const pred = row.prediction;
+            const line2 = (pred === 0 || pred === 1)
+                ? '<div class="small text-muted">Class: ' + (pred === 1 ? 'default risk' : 'no default') + '</div>'
+                : '';
+            return '<div><strong>' + prob + '</strong> PD</div>' + line2;
+        }
+        function riskCell(row) {
+            if (row.log_type === 'batch') return batchTierCell(row);
+            return row.risk_category || '—';
+        }
+        function buildPreviewText(row) {
+            if (row.log_type === 'batch') {
+                return [
+                    'Batch file run',
+                    'Rows: ' + (row.batch_total_records != null ? row.batch_total_records : '—'),
+                    'Model class — default: ' + (row.batch_pred_default != null ? row.batch_pred_default : '—') +
+                        ', no default: ' + (row.batch_pred_no_default != null ? row.batch_pred_no_default : '—'),
+                    'Risk tiers — HIGH: ' + (row.batch_high_risk != null ? row.batch_high_risk : '—') +
+                        ', MED: ' + (row.batch_medium_risk != null ? row.batch_medium_risk : '—') +
+                        ', LOW: ' + (row.batch_low_risk != null ? row.batch_low_risk : '—'),
+                    'Threshold: ' + fmtThreshold(row.threshold),
+                    '',
+                    'Preview JSON:',
+                    row.input_preview || '—'
+                ].join('\n');
+            }
+            return row.input_preview || '—';
+        }
+        async function openTablesModal(logId, createdAt) {
+            window.__tablesModalLogId = logId;
+            window.__tablesModalCreatedAt = createdAt;
+            document.getElementById('tablesModalTitle').innerHTML =
+                '<i class="fas fa-table me-2"></i>Batch — ' + escapeHtml(fmtTime(createdAt));
+            document.getElementById('tablesModalLoading').style.display = 'block';
+            document.getElementById('tablesModalContent').style.display = 'none';
+            document.getElementById('tablesModalContent').innerHTML = '';
+            const modal = new bootstrap.Modal(document.getElementById('tablesModal'));
+            modal.show();
+            try {
+                const res = await fetch('/api/prediction_logs/' + logId, { credentials: 'same-origin' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(detailToString(data.detail) || data.error || 'Failed to load');
+                const parsed = data.input_parsed || {};
+                const ct = parsed.customer_tables;
+                document.getElementById('tablesModalLoading').style.display = 'none';
+                document.getElementById('tablesModalContent').style.display = 'block';
+                document.getElementById('tablesModalContent').innerHTML = buildTablesHtml(ct || {});
+            } catch (e) {
+                document.getElementById('tablesModalLoading').style.display = 'none';
+                document.getElementById('tablesModalContent').style.display = 'block';
+                document.getElementById('tablesModalContent').innerHTML =
+                    '<div class="alert alert-danger">' + escapeHtml(e.message || String(e)) + '</div>';
+            }
+        }
+        function detailToString(detail) {
+            if (detail == null) return '';
+            if (typeof detail === 'string') return detail;
+            if (Array.isArray(detail)) {
+                return detail.map(function (x) { return x.msg || JSON.stringify(x); }).join(' ');
+            }
+            return String(detail);
+        }
+        async function loadLogs() {
+            const loading = document.getElementById('loading');
+            const errBox = document.getElementById('loadError');
+            const wrap = document.getElementById('logTableWrap');
+            const tbody = document.getElementById('logBody');
+            try {
+                const res = await fetch('/api/prediction_logs?limit=200', { credentials: 'same-origin' });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || data.error || 'Failed to load logs');
+                }
+                loading.style.display = 'none';
+                document.getElementById('logCount').textContent =
+                    'Showing ' + data.logs.length + ' of ' + data.total + ' entries';
+                if (!data.logs.length) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No predictions logged yet.</td></tr>';
+                } else {
+                    const previews = data.logs.map(buildPreviewText);
+                    tbody.innerHTML = data.logs.map(function (row, i) {
+                        const isBatch = row.log_type === 'batch';
+                        const btns = isBatch
+                            ? '<button type="button" class="btn btn-sm btn-primary tables-btn mb-1" data-log-id="' + row.id + '">Customer tables</button><br>' +
+                              '<button type="button" class="btn btn-sm btn-outline-secondary preview-btn" data-idx="' + i + '">Summary</button>'
+                            : '<button type="button" class="btn btn-sm btn-outline-primary preview-btn" data-idx="' + i + '">View</button>';
+                        return '<tr>' +
+                            '<td class="text-nowrap small">' + fmtTime(row.created_at) + '</td>' +
+                            '<td><span class="badge bg-secondary badge-type">' + row.log_type + '</span></td>' +
+                            '<td>' + modelClassCell(row) + '</td>' +
+                            '<td>' + riskCell(row) + '</td>' +
+                            '<td class="small">' + decisionCell(row) + '</td>' +
+                            '<td class="preview-cell">' + btns + '</td></tr>';
+                    }).join('');
+                    tbody._previews = previews;
+                    tbody._logRows = data.logs;
+                    tbody.onclick = function (ev) {
+                        const tbtn = ev.target.closest('.tables-btn');
+                        if (tbtn) {
+                            const id = parseInt(tbtn.getAttribute('data-log-id'), 10);
+                            const r = data.logs.find(function (x) { return x.id === id; });
+                            openTablesModal(id, r ? r.created_at : '');
+                            return;
+                        }
+                        const btn = ev.target.closest('.preview-btn');
+                        if (!btn || !tbody._previews) return;
+                        const idx = parseInt(btn.getAttribute('data-idx'), 10);
+                        const row = data.logs[idx];
+                        document.getElementById('previewModalTitle').textContent =
+                            row.log_type === 'batch' ? 'Batch summary' : 'Input & log details';
+                        document.getElementById('previewBody').textContent = tbody._previews[idx] || '';
+                        new bootstrap.Modal(document.getElementById('previewModal')).show();
+                    };
+                }
+                wrap.style.display = 'block';
+            } catch (e) {
+                loading.style.display = 'none';
+                errBox.style.display = 'block';
+                errBox.textContent = e.message || String(e);
+            }
+        }
+        loadLogs();
+    </script>
+</body>
+</html>

@@ -388,6 +388,12 @@
                 </a>
             </div>
             <div class="nav-item">
+                <a href="/prediction_logs" class="nav-link">
+                    <i class="fas fa-history"></i>
+                    Prediction Logs
+                </a>
+            </div>
+            <div class="nav-item">
                 <a href="/interpretability" class="nav-link">
                     <i class="fas fa-brain"></i>
                     AI Interpretability
@@ -405,7 +411,7 @@
                 <i class="fas fa-user-check me-3"></i>
                 Individual Credit Risk Assessment
             </h1>
-            <p class="page-subtitle">Enter customer details below to get an instant AI-powered risk evaluation</p>
+            <p class="page-subtitle">Pick a customer from the stored dataset to autofill the form, adjust if needed, then run the assessment.</p>
         </div>
         
         <div class="row">
@@ -413,6 +419,17 @@
             <div class="col-lg-8">
                 <div class="form-container">
                     <form id="scoringForm">
+                        <div class="form-section pb-2 mb-3" style="border-bottom: 2px solid #e9ecef;">
+                            <h3 class="section-title">
+                                <i class="fas fa-id-card"></i>
+                                Load customer
+                            </h3>
+                            <label for="customerProfileSelect" class="form-label">Customer ID</label>
+                            <select class="form-select" id="customerProfileSelect" autocomplete="off">
+                                <option value="">Loading customers…</option>
+                            </select>
+                            <p class="small text-muted mt-2 mb-0" id="customerLoadHint">Rows come from the canonical credit dataset in the database.</p>
+                        </div>
                         <div class="row">
                             <!-- Left Column -->
                             <div class="col-md-6">
@@ -466,7 +483,7 @@
                                     <div class="row form-row">
                                         <div class="col-12">
                                             <label for="NetIncome" class="form-label">Monthly Net Income</label>
-                                            <input type="number" class="form-control" id="NetIncome" name="NetIncome" step="0.01" value="100000" required>
+                                            <input type="number" class="form-control" id="NetIncome" name="NetIncome" step="0.01" min="0" value="100000.00" required>
                                         </div>
                                     </div>
                                     <div class="row form-row">
@@ -628,6 +645,106 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        var __canonicalCustomers = [];
+        var STRING_FEATURES = new Set(['CRR_NARRATION', 'Gender', 'SECTOR', 'CUSTOMER_SUBSEGMENT_NAME', 'NATIONALITY', 'EMPLOYEMENT_STATUS', 'MARITAL_STATUS', 'AML_RISK_CLASS', 'EmployerStrength']);
+
+        function formatNetIncomeTwoDecimals(v) {
+            var n = Number(v);
+            if (!Number.isFinite(n)) return '';
+            return (Math.round(n * 100) / 100).toFixed(2);
+        }
+
+        function setSelectOptionIfMissing(selectEl, value) {
+            if (value === null || value === undefined || value === '') return;
+            var s = String(value);
+            var found = false;
+            for (var i = 0; i < selectEl.options.length; i++) {
+                if (selectEl.options[i].value === s) { found = true; break; }
+            }
+            if (!found) {
+                var opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                selectEl.appendChild(opt);
+            }
+            selectEl.value = s;
+        }
+
+        function applyCustomerRow(row) {
+            var form = document.getElementById('scoringForm');
+            if (!row || !form) return;
+            Object.keys(row).forEach(function (key) {
+                if (key === 'CustomerID') return;
+                var el = form.elements.namedItem(key);
+                if (!el) return;
+                var v = row[key];
+                if (v === null || v === undefined) v = '';
+                if (el instanceof RadioNodeList) {
+                    el = el[0];
+                    if (!el) return;
+                }
+                if (el.tagName === 'SELECT') {
+                    setSelectOptionIfMissing(el, v);
+                } else if (key === 'NetIncome') {
+                    el.value = v === '' ? '' : formatNetIncomeTwoDecimals(v);
+                } else {
+                    el.value = v === '' ? '' : String(v);
+                }
+            });
+        }
+
+        async function loadCanonicalCustomers() {
+            var sel = document.getElementById('customerProfileSelect');
+            var hint = document.getElementById('customerLoadHint');
+            try {
+                var res = await fetch('/api/canonical_dataset/customers', { credentials: 'same-origin' });
+                var json = await res.json();
+                __canonicalCustomers = json.customers || [];
+                sel.innerHTML = '';
+                var opt0 = document.createElement('option');
+                opt0.value = '';
+                opt0.textContent = __canonicalCustomers.length
+                    ? 'Select a Customer ID…'
+                    : 'No customers in database';
+                sel.appendChild(opt0);
+                __canonicalCustomers.forEach(function (row, idx) {
+                    var id = row.CustomerID;
+                    var o = document.createElement('option');
+                    o.value = String(id);
+                    o.textContent = 'Customer ID: ' + id;
+                    o.dataset.idx = String(idx);
+                    sel.appendChild(o);
+                });
+                if (json.error && hint) {
+                    hint.textContent = json.error;
+                    hint.classList.add('text-warning');
+                }
+            } catch (e) {
+                sel.innerHTML = '<option value="">Could not load customers</option>';
+                if (hint) hint.textContent = e.message || String(e);
+            }
+        }
+
+        document.getElementById('customerProfileSelect').addEventListener('change', function () {
+            var v = this.value;
+            if (!v) return;
+            var row = __canonicalCustomers.find(function (r) { return String(r.CustomerID) === v; });
+            if (row) applyCustomerRow(row);
+        });
+
+        loadCanonicalCustomers();
+
+        (function bindNetIncomeFormat() {
+            var ni = document.getElementById('NetIncome');
+            if (!ni) return;
+            ni.addEventListener('blur', function () {
+                var n = parseFloat(this.value);
+                if (Number.isFinite(n)) {
+                    this.value = (Math.round(n * 100) / 100).toFixed(2);
+                }
+            });
+        })();
+
         document.getElementById('scoringForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -643,10 +760,18 @@
             const data = {};
             
             for (let [key, value] of formData.entries()) {
-                if (['Age', 'NetIncome', 'Exposure_Amount', 'RUNNING_LOANS_COUNT', 'CurrentArrears', 'MaxArrears', 'CustomerTenure', 'SavingAcctDepositCount', 'Max_REMAINING_TENOR(AllLoans)', 'OnUsEMI', 'DrTurnover', 'TotalAssets', 'MobileTotal', 'NonPerforming'].includes(key)) {
-                    data[key] = parseFloat(value) || 0;
-                } else {
+                if (key === 'CustomerID') continue;
+                if (STRING_FEATURES.has(key)) {
                     data[key] = value;
+                } else {
+                    var n = parseFloat(value);
+                    if (!Number.isFinite(n)) {
+                        data[key] = 0;
+                    } else if (key === 'NetIncome') {
+                        data[key] = Math.round(n * 100) / 100;
+                    } else {
+                        data[key] = n;
+                    }
                 }
             }
             

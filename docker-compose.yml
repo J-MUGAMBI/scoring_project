@@ -1,0 +1,30 @@
+# From this folder:
+#   docker compose up --build
+#
+# URLs: http://localhost:8765  |  Swagger: http://localhost:8765/docs
+#
+# Optional: create a .env next to this file:
+#   SESSION_SECRET=<openssl rand -hex 32>
+#   HOST_PORT=8765
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: credit-risk-scorer:latest
+    container_name: credit-risk-scorer
+    ports:
+      - "${HOST_PORT:-8765}:8765"
+    environment:
+      UVICORN_HOST: "0.0.0.0"
+      UVICORN_PORT: "8765"
+      # Persist DB outside the image layer
+      SQLITE_DB_PATH: "/app/data/users.db"
+      SESSION_SECRET: "${SESSION_SECRET:-change-me-in-production-use-openssl-rand-hex-32}"
+    volumes:
+      - app_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  app_data:

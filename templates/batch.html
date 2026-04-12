@@ -8,698 +8,618 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #1a252f;
-            --secondary-color: #2ecc71;
-            --accent-color: #3498db;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
+            --batch-primary: #0f172a;
+            --batch-green: #10b981;
+            --batch-green-dark: #059669;
+            --batch-accent: #0ea5e9;
+            --batch-warn: #f59e0b;
+            --batch-danger: #ef4444;
+            --batch-card: rgba(255, 255, 255, 0.97);
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 50%, #229954 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(160deg, #064e3b 0%, #047857 35%, #0d9488 100%);
             min-height: 100vh;
             font-size: 16px;
             margin: 0;
             padding: 0;
         }
-        
+
         .sidebar {
             position: fixed;
             top: 0;
             left: 0;
             height: 100vh;
             width: 320px;
-            background: linear-gradient(135deg, var(--primary-color), #34495e);
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
             color: white;
             z-index: 1000;
             transition: transform 0.3s ease;
             overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
         }
-        
+
         .sidebar-header {
             padding: 2rem 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             text-align: center;
         }
-        
+
         .sidebar-header h3 {
-            font-size: 1.8rem;
+            font-size: 1.75rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            animation: colorBlink 3s infinite;
-            text-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+            margin-bottom: 0.25rem;
+            color: #ecfdf5;
         }
-        
-        @keyframes colorBlink {
-            0% { color: #00f5ff; }
-            20% { color: #ff00ff; }
-            40% { color: #ffff00; }
-            60% { color: #00ff00; }
-            80% { color: #ff6b00; }
-            100% { color: #00f5ff; }
-        }
-        
-        .sidebar-header p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin: 0;
-        }
-        
-        .sidebar-nav {
-            padding: 1rem 0;
-        }
-        
-        .nav-item {
-            margin-bottom: 0.5rem;
-        }
-        
+
+        .sidebar-nav { padding: 1rem 0; }
+        .nav-item { margin-bottom: 0.35rem; }
+
         .nav-link {
             display: flex;
             align-items: center;
-            padding: 1rem 1.5rem;
-            color: rgba(255,255,255,0.8);
+            padding: 0.9rem 1.5rem;
+            color: rgba(255, 255, 255, 0.78);
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             border-left: 3px solid transparent;
         }
-        
+
         .nav-link:hover, .nav-link.active {
             color: white;
-            background: rgba(255,255,255,0.1);
-            border-left-color: var(--secondary-color);
+            background: rgba(16, 185, 129, 0.12);
+            border-left-color: var(--batch-green);
         }
-        
+
         .nav-link i {
-            width: 20px;
-            margin-right: 1rem;
+            width: 22px;
+            margin-right: 0.85rem;
         }
-        
+
         .main-content {
             margin-left: 320px;
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            padding-bottom: 3rem;
         }
-        
-        .navbar {
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            background: var(--primary-color) !important;
+
+        .batch-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 1.25rem;
         }
-        
-        .container {
-            max-width: 1400px;
-        }
-        
-        .page-header {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 25px;
-            padding: 2rem;
-            margin: 1rem 0;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .page-title {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-        
-        .page-subtitle {
-            font-size: 1.1rem;
-            color: #555;
-            margin-bottom: 0;
-        }
-        
-        .upload-container {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 25px;
-            padding: 3rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .instructions-card {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+
+        .batch-page-header {
+            background: var(--batch-card);
             border-radius: 20px;
-            padding: 2.5rem;
-            margin-bottom: 2rem;
-            border: none;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-        }
-        
-        .instructions-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--primary-color);
+            padding: 1.75rem 2rem;
             margin-bottom: 1.5rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .batch-page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--batch-primary);
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .batch-page-header p {
+            margin: 0.5rem 0 0 0;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .batch-action-card {
+            background: var(--batch-card);
+            border-radius: 20px;
+            padding: 2rem 2rem 2.25rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .batch-action-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--batch-green), var(--batch-green-dark));
+            color: white;
             display: flex;
             align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 12px 28px rgba(16, 185, 129, 0.35);
         }
-        
-        .instructions-title i {
-            margin-right: 0.5rem;
-            color: var(--secondary-color);
+
+        .batch-action-card h2 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--batch-primary);
+            margin: 0 0 0.5rem 0;
         }
-        
-        .column-list {
-            background: white;
-            border-radius: 15px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+
+        .batch-action-card .lead-text {
+            color: #64748b;
+            font-size: 0.92rem;
+            line-height: 1.55;
+            margin-bottom: 1.5rem;
         }
-        
-        .column-list ul {
-            margin: 0;
-            padding-left: 1rem;
+
+        .batch-steps {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.75rem 0;
         }
-        
-        .column-list li {
-            padding: 0.3rem 0;
-            color: #555;
-            font-weight: 500;
+
+        .batch-steps li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.85rem;
+            font-size: 0.88rem;
+            color: #475569;
         }
-        
-        .upload-zone {
-            border: 3px dashed var(--secondary-color);
-            border-radius: 20px;
-            padding: 3rem;
-            text-align: center;
-            background: linear-gradient(135deg, rgba(46, 204, 113, 0.05), rgba(39, 174, 96, 0.05));
-            transition: all 0.3s ease;
-            margin-bottom: 2rem;
+
+        .batch-steps .step-num {
+            flex-shrink: 0;
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            background: #ecfdf5;
+            color: var(--batch-green-dark);
+            font-weight: 700;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
-        .upload-zone:hover {
-            border-color: #27ae60;
-            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(39, 174, 96, 0.1));
+
+        .btn-batch-run {
+            background: linear-gradient(135deg, var(--batch-green), var(--batch-green-dark));
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1.05rem;
+            padding: 1rem 1.75rem;
+            border-radius: 14px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(5, 150, 105, 0.35);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-batch-run:hover:not(:disabled) {
             transform: translateY(-2px);
+            box-shadow: 0 14px 36px rgba(5, 150, 105, 0.45);
+            color: white;
         }
-        
-        .upload-icon {
-            font-size: 4rem;
-            color: var(--secondary-color);
+
+        .btn-batch-run:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .batch-outcome-card {
+            background: var(--batch-card);
+            border-radius: 20px;
+            padding: 1.75rem 2rem 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .batch-outcome-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #94a3b8;
             margin-bottom: 1rem;
         }
-        
-        .upload-text {
-            font-size: 1.3rem;
-            color: var(--primary-color);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        
-        .upload-subtext {
-            color: #666;
-            font-size: 1rem;
-        }
-        
-        .form-control {
-            font-size: 1.1rem;
-            padding: 1rem;
-            border: 2px solid #e9ecef;
-            border-radius: 15px;
-            transition: all 0.3s ease;
-        }
-        
-        .form-control:focus {
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 0.2rem rgba(46, 204, 113, 0.25);
-        }
-        
-        .btn-process {
-            background: linear-gradient(135deg, var(--secondary-color), #27ae60);
-            border: none;
-            padding: 1.2rem 3rem;
-            font-size: 1.3rem;
-            font-weight: 600;
-            border-radius: 50px;
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.3);
-        }
-        
-        .btn-process:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(46, 204, 113, 0.4);
-            color: white;
-        }
-        
-        .results-container {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 25px;
-            padding: 2.5rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 2rem;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .results-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .results-title {
-            font-size: 1.6rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-item {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            padding: 1.5rem;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        
-        .risk-breakdown {
-            margin: 2rem 0;
-        }
-        
-        .risk-item {
+
+        .batch-empty {
+            flex: 1;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            padding: 1rem;
-            margin-bottom: 0.5rem;
-            border-radius: 10px;
-            font-weight: 600;
-        }
-        
-        .risk-low {
-            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(39, 174, 96, 0.1));
-            color: var(--secondary-color);
-        }
-        
-        .risk-medium {
-            background: linear-gradient(135deg, rgba(243, 156, 18, 0.1), rgba(230, 126, 34, 0.1));
-            color: var(--warning-color);
-        }
-        
-        .risk-high {
-            background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
-            color: var(--danger-color);
-        }
-        
-        .progress-container {
-            margin: 1.5rem 0;
-        }
-        
-        .progress {
-            height: 15px;
-            border-radius: 10px;
-            background: #e9ecef;
-            overflow: hidden;
-        }
-        
-        .progress-bar {
-            transition: width 1s ease;
-        }
-        
-        .btn-download {
-            background: linear-gradient(135deg, var(--accent-color), #2980b9);
-            border: none;
-            padding: 1rem 2rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border-radius: 25px;
-            color: white;
-            width: 100%;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-download:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
-            color: white;
-        }
-        
-        .loading-container {
+            justify-content: center;
             text-align: center;
-            padding: 3rem;
+            padding: 2rem 1rem;
+            color: #64748b;
         }
-        
-        .spinner-border {
-            width: 4rem;
-            height: 4rem;
-            border-width: 0.4rem;
-            color: var(--secondary-color);
+
+        .batch-empty .empty-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            color: var(--batch-green-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1.25rem;
         }
-        
-        .loading-text {
-            font-size: 1.3rem;
-            color: var(--primary-color);
-            margin-top: 1.5rem;
-            font-weight: 600;
+
+        .batch-empty h5 {
+            color: var(--batch-primary);
+            font-weight: 700;
+            margin-bottom: 0.35rem;
         }
-        
-        .error-container {
-            background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
-            border: 2px solid var(--danger-color);
-            border-radius: 15px;
+
+        .batch-loading {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
             padding: 2rem;
+        }
+
+        .batch-loading .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.28rem;
+            color: var(--batch-green);
+        }
+
+        .batch-loading h5 {
+            margin-top: 1.25rem;
+            font-weight: 700;
+            color: var(--batch-primary);
+        }
+
+        .batch-error {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            color: #991b1b;
+        }
+
+        .batch-error i {
+            margin-right: 0.5rem;
+        }
+
+        .batch-results {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+        }
+
+        .batch-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .batch-kpi {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 1rem 0.9rem;
             text-align: center;
+            border: 1px solid #e2e8f0;
         }
-        
-        .pulse {
-            animation: pulse 2s infinite;
+
+        .batch-kpi .label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #94a3b8;
+            margin-bottom: 0.35rem;
         }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+
+        .batch-kpi .value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--batch-primary);
+            line-height: 1.2;
         }
-        
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .page-title {
-                font-size: 2.2rem;
-            }
-            
-            .upload-container, .results-container {
-                padding: 2rem;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
+
+        .batch-kpi.kpi-high .value { color: var(--batch-danger); }
+        .batch-kpi.kpi-med .value { color: #d97706; }
+        .batch-kpi.kpi-low .value { color: var(--batch-green-dark); }
+
+        .batch-mix-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+
+        .batch-segment-bar {
+            display: flex;
+            height: 14px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: #e2e8f0;
+            margin-bottom: 0.65rem;
+        }
+
+        .batch-segment-bar .seg {
+            height: 100%;
+            transition: width 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 0;
+        }
+
+        .batch-segment-bar .seg-low { background: linear-gradient(90deg, #34d399, #10b981); }
+        .batch-segment-bar .seg-med { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+        .batch-segment-bar .seg-high { background: linear-gradient(90deg, #f87171, #ef4444); }
+
+        .batch-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.25rem;
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+
+        .batch-legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .batch-legend i {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot-low { background: #10b981; }
+        .dot-med { background: #f59e0b; }
+        .dot-high { background: #ef4444; }
+
+        .btn-batch-download {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 0.9rem 1.5rem;
+            border-radius: 12px;
+            width: 100%;
+            box-shadow: 0 8px 24px rgba(14, 165, 233, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-batch-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(14, 165, 233, 0.38);
+            color: white;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; }
+            .batch-outcome-card { min-height: 320px; }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h3>CreditScore AI</h3>
         </div>
-        
         <nav class="sidebar-nav">
             <div class="nav-item">
-                <a href="/" class="nav-link">
-                    <i class="fas fa-home"></i>
-                    Dashboard
-                </a>
+                <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
             </div>
             <div class="nav-item">
-                <a href="/individual" class="nav-link">
-                    <i class="fas fa-user"></i>
-                    Individual Scoring
-                </a>
+                <a href="/individual" class="nav-link"><i class="fas fa-user"></i> Individual Scoring</a>
             </div>
             <div class="nav-item">
-                <a href="/batch" class="nav-link active">
-                    <i class="fas fa-upload"></i>
-                    Batch Scoring
-                </a>
+                <a href="/batch" class="nav-link active"><i class="fas fa-layer-group"></i> Batch Scoring</a>
             </div>
             <div class="nav-item">
-                <a href="/data_analysis" class="nav-link">
-                    <i class="fas fa-chart-bar"></i>
-                    Data Analysis
-                </a>
+                <a href="/data_analysis" class="nav-link"><i class="fas fa-chart-bar"></i> Data Analysis</a>
             </div>
             <div class="nav-item">
-                <a href="/interpretability" class="nav-link">
-                    <i class="fas fa-brain"></i>
-                    AI Interpretability
-                </a>
+                <a href="/prediction_logs" class="nav-link"><i class="fas fa-history"></i> Prediction Logs</a>
+            </div>
+            <div class="nav-item">
+                <a href="/interpretability" class="nav-link"><i class="fas fa-brain"></i> AI Interpretability</a>
             </div>
         </nav>
     </div>
-    
-    <!-- Main Content -->
+
     <div class="main-content">
-        <div class="container my-4">
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1 class="page-title">
-                <i class="fas fa-file-upload me-3"></i>
-                Batch Credit Risk Processing
-            </h1>
-            <p class="page-subtitle">Upload CSV files to process multiple applications simultaneously with AI-powered risk assessment</p>
-        </div>
-        
-        <div class="row">
-            <!-- Upload Section -->
-            <div class="col-lg-8">
-                <div class="upload-container">
-                    <!-- Instructions -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="instructions-card">
-                                <h3 class="instructions-title">
-                                    <i class="fas fa-info-circle"></i>
-                                    CSV Requirements
-                                </h3>
-                                <p class="mb-2">Required columns:</p>
-                                <div class="column-list">
-                                    <ul class="list-unstyled" style="font-size: 0.85rem;">
-                                        <li><i class="fas fa-check text-success me-1"></i>CRR_NARRATION</li>
-                                        <li><i class="fas fa-check text-success me-1"></i>Max_REMAINING_TENOR(AllLoans)</li>
-                                        <li><i class="fas fa-check text-success me-1"></i>RUNNING_LOANS_COUNT</li>
-                                        <li><i class="fas fa-check text-success me-1"></i>Exposure_Amount</li>
-                                        <li><i class="fas fa-check text-success me-1"></i>NetIncome</li>
-                                        <li><i class="fas fa-check text-success me-1"></i>OnUsEMI</li>
-                                        <li><i class="fas fa-check text-success me-1"></i>DrTurnover</li>
-                                        <li><i class="fas fa-check text-success me-1"></i>TotalAssets</li>
-                                        <li><i class="fas fa-check text-success me-1"></i>MobileTotal</li>
-                                        <li><i class="fas fa-check text-success me-1"></i>MaxArrears</li>
-                                        <li><i class="fas fa-check text-success me-1"></i>CurrentArrears</li>
-                                    </ul>
-                                </div>
-                            </div>
+        <div class="batch-wrap">
+            <header class="batch-page-header">
+                <h1><i class="fas fa-layer-group me-2" style="color: #059669;"></i> Batch prediction</h1>
+                <p>Score every record in your stored portfolio in one run, then review the mix and export results.</p>
+            </header>
+
+            <div class="row g-4 align-items-stretch">
+                <div class="col-lg-5">
+                    <div class="batch-action-card">
+                        <div class="batch-action-icon">
+                            <i class="fas fa-bolt"></i>
                         </div>
-                        <div class="col-md-6">
-                            <div class="instructions-card">
-                                <h3 class="instructions-title">
-                                    <i class="fas fa-upload"></i>
-                                    Upload & Process
-                                </h3>
-                                <form id="batchForm" enctype="multipart/form-data">
-                                    <div class="upload-zone">
-                                        <i class="fas fa-cloud-upload-alt upload-icon" style="font-size: 2.5rem;"></i>
-                                        <div class="upload-text" style="font-size: 1rem;">Drop CSV file or click to browse</div>
-                                        <div class="upload-subtext" style="font-size: 0.85rem;">Max: 16MB</div>
-                                        <input type="file" class="form-control mt-2" id="csvFile" name="file" accept=".csv" required style="font-size: 0.9rem; padding: 0.6rem;">
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button type="submit" class="btn btn-process" style="padding: 0.8rem 2rem; font-size: 1rem;">
-                                            <i class="fas fa-cogs me-2"></i>
-                                            Process Batch
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Results Section -->
-            <div class="col-lg-4">
-                <div class="results-container">
-                    <div id="results" style="display: none;">
-                        <div class="results-header">
-                            <h4 class="results-title">
-                                <i class="fas fa-chart-bar me-2"></i>
-                                Processing Results
-                            </h4>
-                        </div>
-                        
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-label">Total Records</div>
-                                <div id="totalRecords" class="stat-value">0</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Processing Time</div>
-                                <div class="stat-value">&lt; 5s</div>
-                            </div>
-                        </div>
-                        
-                        <div class="risk-breakdown">
-                            <div class="risk-item risk-high">
-                                <span><i class="fas fa-exclamation-triangle me-2"></i>High Risk</span>
-                                <span id="highRisk" class="badge bg-danger">0</span>
-                            </div>
-                            <div class="risk-item risk-medium">
-                                <span><i class="fas fa-exclamation-circle me-2"></i>Medium Risk</span>
-                                <span id="mediumRisk" class="badge bg-warning">0</span>
-                            </div>
-                            <div class="risk-item risk-low">
-                                <span><i class="fas fa-check-circle me-2"></i>Low Risk</span>
-                                <span id="lowRisk" class="badge bg-success">0</span>
-                            </div>
-                        </div>
-                        
-                        <div class="progress-container">
-                            <div class="progress">
-                                <div id="lowRiskBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
-                                <div id="mediumRiskBar" class="progress-bar bg-warning" role="progressbar" style="width: 0%"></div>
-                                <div id="highRiskBar" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
-                            </div>
-                        </div>
-                        
-                        <button id="downloadBtn" class="btn btn-download">
-                            <i class="fas fa-download me-2"></i>
-                            Download Results
+                        <h2>Run scoring</h2>
+                        <p class="lead-text">Uses the canonical dataset already loaded in your application database—same pipeline as production batch scoring.</p>
+                        <ul class="batch-steps">
+                            <li>
+                                <span class="step-num">1</span>
+                                <span>Model reads all rows from the database snapshot.</span>
+                            </li>
+                            <li>
+                                <span class="step-num">2</span>
+                                <span>Each account gets probability, tier, and decision.</span>
+                            </li>
+                            <li>
+                                <span class="step-num">3</span>
+                                <span>Download a CSV with full scored output.</span>
+                            </li>
+                        </ul>
+                        <button type="button" id="runBatchBtn" class="btn-batch-run">
+                            <i class="fas fa-play me-2"></i> Run batch prediction
                         </button>
                     </div>
-                    
-                    <div id="loading" class="loading-container" style="display: none;">
-                        <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                </div>
+
+                <div class="col-lg-7">
+                    <div class="batch-outcome-card">
+                        <div class="batch-outcome-title">Outcome</div>
+
+                        <div id="defaultMessage" class="batch-empty">
+                            <div class="empty-icon"><i class="fas fa-chart-pie"></i></div>
+                            <h5>Waiting to run</h5>
+                            <p class="mb-0 small">Results and risk mix will appear here. Processing is typically under a few seconds.</p>
                         </div>
-                        <div class="loading-text">Processing your batch file...</div>
-                        <div class="text-muted mt-2">This may take a few moments</div>
-                    </div>
-                    
-                    <div id="error" class="error-container" style="display: none;">
-                        <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
-                        <div class="error-text"></div>
-                    </div>
-                    
-                    <div id="defaultMessage" class="text-center text-muted">
-                        <i class="fas fa-file-csv fa-4x mb-3" style="color: var(--secondary-color);"></i>
-                        <h5>Ready for Batch Processing</h5>
-                        <p>Upload your CSV file to get started with bulk risk assessment. Our AI will analyze all records and provide comprehensive results.</p>
+
+                        <div id="loading" class="batch-loading">
+                            <div class="spinner-border" role="status"><span class="visually-hidden">Loading</span></div>
+                            <h5>Scoring portfolio…</h5>
+                            <p class="text-muted small mb-0">Applying the credit model to all stored records.</p>
+                        </div>
+
+                        <div id="error" class="batch-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div id="results" class="batch-results">
+                            <div class="batch-kpi-grid">
+                                <div class="batch-kpi">
+                                    <div class="label">Total records</div>
+                                    <div id="totalRecords" class="value">0</div>
+                                </div>
+                                <div class="batch-kpi">
+                                    <div class="label">Processing</div>
+                                    <div class="value" style="font-size: 1.05rem;">&lt; 5s</div>
+                                </div>
+                                <div class="batch-kpi kpi-high">
+                                    <div class="label">High risk</div>
+                                    <div id="highRisk" class="value">0</div>
+                                </div>
+                                <div class="batch-kpi kpi-med">
+                                    <div class="label">Medium</div>
+                                    <div id="mediumRisk" class="value">0</div>
+                                </div>
+                                <div class="batch-kpi kpi-low">
+                                    <div class="label">Low risk</div>
+                                    <div id="lowRisk" class="value">0</div>
+                                </div>
+                            </div>
+
+                            <div class="batch-mix-label">Portfolio mix</div>
+                            <div class="batch-segment-bar" aria-hidden="true">
+                                <div id="segLow" class="seg seg-low" style="width: 0%;"></div>
+                                <div id="segMed" class="seg seg-med" style="width: 0%;"></div>
+                                <div id="segHigh" class="seg seg-high" style="width: 0%;"></div>
+                            </div>
+                            <div class="batch-legend">
+                                <span><i class="dot-low"></i> Low %</span>
+                                <span><i class="dot-med"></i> Medium %</span>
+                                <span><i class="dot-high"></i> High %</span>
+                            </div>
+
+                            <button type="button" id="downloadBtn" class="btn-batch-download">
+                                <i class="fas fa-download me-2"></i> Download results (CSV)
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let csvData = null;
-        
-        document.getElementById('batchForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const loading = document.getElementById('loading');
-            const results = document.getElementById('results');
-            const error = document.getElementById('error');
-            const defaultMessage = document.getElementById('defaultMessage');
-            
-            if (loading) loading.style.display = 'block';
-            if (results) results.style.display = 'none';
+
+        function resetSegments() {
+            ['segLow', 'segMed', 'segHigh'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) el.style.width = '0%';
+            });
+        }
+
+        async function runBatch() {
+            var loading = document.getElementById('loading');
+            var results = document.getElementById('results');
+            var error = document.getElementById('error');
+            var defaultMessage = document.getElementById('defaultMessage');
+            var btn = document.getElementById('runBatchBtn');
+
+            defaultMessage.style.display = 'none';
+            results.style.display = 'none';
             if (error) error.style.display = 'none';
-            if (defaultMessage) defaultMessage.style.display = 'none';
-            
-            const formData = new FormData(this);
-            
+            loading.style.display = 'flex';
+            btn.disabled = true;
+            resetSegments();
+
             try {
-                const response = await fetch('/batch_predict', {
+                var response = await fetch('/batch_predict_stored', {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/json' },
+                    body: '{}',
+                    credentials: 'same-origin'
                 });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
+                var result = await response.json();
+
+                loading.style.display = 'none';
+
+                if (response.ok && result.success) {
                     csvData = result.csv_data;
-                    
                     document.getElementById('totalRecords').textContent = result.total_records;
                     document.getElementById('highRisk').textContent = result.high_risk;
                     document.getElementById('mediumRisk').textContent = result.medium_risk;
                     document.getElementById('lowRisk').textContent = result.low_risk;
-                    
-                    // Update progress bars with animation
-                    const total = result.total_records;
-                    const lowPct = (result.low_risk / total * 100).toFixed(1);
-                    const mediumPct = (result.medium_risk / total * 100).toFixed(1);
-                    const highPct = (result.high_risk / total * 100).toFixed(1);
-                    
-                    setTimeout(() => {
-                        document.getElementById('lowRiskBar').style.width = lowPct + '%';
-                        document.getElementById('mediumRiskBar').style.width = mediumPct + '%';
-                        document.getElementById('highRiskBar').style.width = highPct + '%';
-                    }, 500);
-                    
-                    results.style.display = 'block';
+
+                    var total = result.total_records;
+                    var lowPct = total ? (result.low_risk / total * 100) : 0;
+                    var mediumPct = total ? (result.medium_risk / total * 100) : 0;
+                    var highPct = total ? (result.high_risk / total * 100) : 0;
+
+                    setTimeout(function () {
+                        document.getElementById('segLow').style.width = lowPct + '%';
+                        document.getElementById('segMed').style.width = mediumPct + '%';
+                        document.getElementById('segHigh').style.width = highPct + '%';
+                    }, 80);
+
+                    results.style.display = 'flex';
                 } else {
-                    const errorText = document.querySelector('.error-text');
-                    if (errorText) errorText.textContent = result.error;
-                    if (error) error.style.display = 'block';
+                    var errorText = document.querySelector('.error-text');
+                    if (errorText) errorText.textContent = result.error || result.detail || 'Request failed';
+                    error.style.display = 'block';
                 }
             } catch (err) {
-                const errorText = document.querySelector('.error-text');
-                if (errorText) errorText.textContent = 'Network error: ' + err.message;
-                if (error) error.style.display = 'block';
-            } finally {
-                if (loading) loading.style.display = 'none';
-            }
-        });
-        
-        document.getElementById('downloadBtn').addEventListener('click', function() {
-            if (csvData) {
-                const blob = new Blob([csvData], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'batch_risk_assessment_results.csv';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            }
-        });
-    </script>
-</body>
-</html>      } finally {
                 loading.style.display = 'none';
+                var errorText = document.querySelector('.error-text');
+                if (errorText) errorText.textContent = 'Network error: ' + err.message;
+                error.style.display = 'block';
+            } finally {
+                btn.disabled = false;
             }
-        });
-        
-        document.getElementById('downloadBtn').addEventListener('click', function() {
-            if (csvData) {
-                const blob = new Blob([csvData], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'batch_results.csv';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            }
+        }
+
+        document.getElementById('runBatchBtn').addEventListener('click', runBatch);
+
+        document.getElementById('downloadBtn').addEventListener('click', function () {
+            if (!csvData) return;
+            var blob = new Blob([csvData], { type: 'text/csv' });
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'batch_risk_assessment_results.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         });
     </script>
 </body>
