@@ -791,6 +791,11 @@ def fig_to_json_dict(fig: go.Figure) -> dict:
     return json.loads(pio.to_json(fig))
 
 
+def _to_list(series: pd.Series) -> list:
+    """Convert a pandas Series to a plain Python list so Plotly serialises as JSON numbers, not bdata."""
+    return [v.item() if hasattr(v, 'item') else v for v in series]
+
+
 def decision_from_pd(pd_val: float) -> Dict[str, str]:
     if pd_val > 0.10:
         return {"Risk_Class": "HIGH RISK", "Decision": "DECLINE"}
@@ -1025,36 +1030,40 @@ def run_data_analysis_from_dataframe(df_in: pd.DataFrame) -> Dict[str, Any]:
     if "Gender" in df_sample.columns:
         gender_counts = df_sample["Gender"].value_counts().reset_index()
         gender_counts.columns = ["Gender", "Count"]
-        fig_gender = px.pie(
-            gender_counts,
-            names="Gender",
-            values="Count",
-            title="<b>Gender Distribution</b>",
-        )
-        fig_gender.update_traces(textposition="inside", textinfo="percent+label")
+        fig_gender = go.Figure(go.Pie(
+            labels=_to_list(gender_counts["Gender"]),
+            values=_to_list(gender_counts["Count"]),
+            textposition="inside",
+            textinfo="percent+label+value",
+        ))
+        fig_gender.update_layout(title="<b>Gender Distribution</b>")
         plots["gender_pie"] = fig_to_json_dict(fig_gender)
     if "SECTOR" in df_sample.columns:
         sector_counts = df_sample["SECTOR"].value_counts().nlargest(10).reset_index()
         sector_counts.columns = ["SECTOR", "Count"]
-        fig_sector = px.bar(
-            sector_counts,
-            x="SECTOR",
-            y="Count",
-            title="<b>Customers by Sector</b>",
-        )
+        counts_list = _to_list(sector_counts["Count"])
+        fig_sector = go.Figure(go.Bar(
+            x=_to_list(sector_counts["SECTOR"]),
+            y=counts_list,
+            text=counts_list,
+            textposition="outside",
+        ))
         fig_sector.update_layout(
+            title="<b>Customers by Sector</b>",
             xaxis_title="<b>Sector</b>", yaxis_title="<b>Number of Customers</b>"
         )
         plots["sector_bar"] = fig_to_json_dict(fig_sector)
     if "NetIncome" in df_sample.columns and "SECTOR" in df_sample.columns:
         income_sector = df_sample.groupby("SECTOR", as_index=False)["NetIncome"].mean()
-        fig_income = px.bar(
-            income_sector,
-            x="SECTOR",
-            y="NetIncome",
-            title="<b>Average Net Income by Sector</b>",
-        )
+        income_vals = [round(float(v)) for v in income_sector["NetIncome"]]
+        fig_income = go.Figure(go.Bar(
+            x=_to_list(income_sector["SECTOR"]),
+            y=income_vals,
+            text=income_vals,
+            textposition="outside",
+        ))
         fig_income.update_layout(
+            title="<b>Average Net Income by Sector</b>",
             xaxis_title="<b>Sector</b>", yaxis_title="<b>Average Net Income</b>"
         )
         plots["income_sector_bar"] = fig_to_json_dict(fig_income)
@@ -1062,15 +1071,20 @@ def run_data_analysis_from_dataframe(df_in: pd.DataFrame) -> Dict[str, Any]:
         nonperf_gender = (
             df_sample.groupby(["Gender", "NonPerforming"]).size().reset_index(name="Count")
         )
-        fig_nonperf = px.bar(
-            nonperf_gender,
-            x="Gender",
-            y="Count",
-            color="NonPerforming",
-            barmode="stack",
-            title="<b>Non-Performing Loans by Gender</b>",
-        )
+        fig_nonperf = go.Figure()
+        for np_val in sorted(nonperf_gender["NonPerforming"].unique()):
+            sub = nonperf_gender[nonperf_gender["NonPerforming"] == np_val]
+            cnt = _to_list(sub["Count"])
+            fig_nonperf.add_trace(go.Bar(
+                name=str(np_val),
+                x=_to_list(sub["Gender"]),
+                y=cnt,
+                text=cnt,
+                textposition="inside",
+            ))
         fig_nonperf.update_layout(
+            title="<b>Non-Performing Loans by Gender</b>",
+            barmode="stack",
             xaxis_title="<b>Gender</b>",
             yaxis_title="<b>Number of Accounts</b>",
             legend_title="<b>Non-Performing</b>",
@@ -1083,31 +1097,46 @@ def run_data_analysis_from_dataframe(df_in: pd.DataFrame) -> Dict[str, Any]:
             age_counts = age_bins.value_counts().sort_index().reset_index()
             age_counts.columns = ["AgeRange", "Count"]
             age_counts["AgeRange"] = age_counts["AgeRange"].astype(str)
-            fig_age_bins = px.bar(
-                age_counts,
-                x="AgeRange",
-                y="Count",
-                title="<b>Age Distribution (5 Bins)</b>",
-            )
+            cnt = _to_list(age_counts["Count"])
+            fig_age_bins = go.Figure(go.Bar(
+                x=_to_list(age_counts["AgeRange"]),
+                y=cnt,
+                text=cnt,
+                textposition="outside",
+            ))
             fig_age_bins.update_layout(
+                title="<b>Age Distribution (5 Bins)</b>",
                 xaxis_title="<b>Age Range</b>", yaxis_title="<b>Number of Customers</b>"
             )
             plots["age_bins"] = fig_to_json_dict(fig_age_bins)
     if "AML_RISK_CLASS" in df_sample.columns:
         aml_counts = df_sample["AML_RISK_CLASS"].value_counts().reset_index()
         aml_counts.columns = ["AML_RISK_CLASS", "Count"]
-        fig_aml = px.pie(
-            aml_counts,
-            names="AML_RISK_CLASS",
-            values="Count",
-            title="<b>AML Risk Class Distribution</b>",
-        )
-        fig_aml.update_traces(textposition="inside", textinfo="percent+label")
+        fig_aml = go.Figure(go.Pie(
+            labels=_to_list(aml_counts["AML_RISK_CLASS"]),
+            values=_to_list(aml_counts["Count"]),
+            textposition="inside",
+            textinfo="percent+label+value",
+        ))
+        fig_aml.update_layout(title="<b>AML Risk Class Distribution</b>")
         plots["aml_risk_pie"] = fig_to_json_dict(fig_aml)
     return {
         "success": True,
         "summary_table": summary_table_html,
         "plots": plots,
+        "metrics": {
+            "total_customers": int(len(df)),
+            "non_performing_rate": round(
+                float((df["NonPerforming"] > 0).sum() / len(df) * 100), 1
+            ) if "NonPerforming" in df.columns and len(df) else 0,
+            "avg_net_income": round(float(df["NetIncome"].mean()), 0)
+            if "NetIncome" in df.columns else 0,
+            "avg_exposure": round(float(df["Exposure_Amount"].mean()), 0)
+            if "Exposure_Amount" in df.columns else 0,
+            "high_aml_pct": round(
+                float((df["AML_RISK_CLASS"] == "HIGH").sum() / len(df) * 100), 1
+            ) if "AML_RISK_CLASS" in df.columns and len(df) else 0,
+        },
     }
 
 

@@ -16,23 +16,21 @@
             --warning-color: #f39c12;
         }
 
-        body {
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 50%, #764ba2 100%);
-            min-height: 100vh;
-            margin: 0;
         }
 
         .sidebar {
             position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 320px;
+            top: 0; left: 0;
+            height: 100vh; width: 320px;
             background: linear-gradient(135deg, var(--primary-color), #34495e);
             color: white;
             z-index: 1000;
-            transition: transform 0.3s ease;
             overflow-y: auto;
         }
 
@@ -51,21 +49,16 @@
         }
 
         @keyframes colorBlink {
-            0% { color: #00f5ff; }
-            20% { color: #ff00ff; }
-            40% { color: #ffff00; }
-            60% { color: #00ff00; }
-            80% { color: #ff6b00; }
+            0%   { color: #00f5ff; }
+            20%  { color: #ff00ff; }
+            40%  { color: #ffff00; }
+            60%  { color: #00ff00; }
+            80%  { color: #ff6b00; }
             100% { color: #00f5ff; }
         }
 
-        .sidebar-nav {
-            padding: 1rem 0;
-        }
-
-        .nav-item {
-            margin-bottom: 0.5rem;
-        }
+        .sidebar-nav { padding: 1rem 0; }
+        .nav-item { margin-bottom: 0.5rem; }
 
         .nav-link {
             display: flex;
@@ -83,49 +76,134 @@
             border-left-color: var(--secondary-color);
         }
 
-        .nav-link i {
-            width: 20px;
-            margin-right: 1rem;
-        }
+        .nav-link i { width: 20px; margin-right: 1rem; }
 
+        /* ── Layout ── */
         .main-content {
             margin-left: 320px;
-            min-height: 100vh;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
+        /* Frozen top zone — never scrolls */
+        .sticky-top-zone {
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 50%, #764ba2 100%);
+            padding: 1rem 1.5rem 0.8rem;
+        }
+
+        /* Scrollable charts zone */
+        .scroll-zone {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 1.5rem 2rem;
+        }
+
+        .scroll-zone::-webkit-scrollbar { width: 6px; }
+        .scroll-zone::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
+        .scroll-zone::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.35); border-radius: 3px; }
+
+        /* ── Page header ── */
         .page-header {
             background: rgba(255,255,255,0.95);
-            border-radius: 24px;
-            padding: 1.8rem;
-            margin: 1.5rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border-radius: 20px;
+            padding: 1rem 1.8rem;
+            margin-bottom: 0.85rem;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.13);
             text-align: center;
         }
 
         .page-title {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 800;
             color: var(--primary-color);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
         }
 
         .page-subtitle {
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: #555;
             margin-bottom: 0;
         }
 
-        .analysis-layout {
-            padding: 0 1.5rem 2rem 1.5rem;
+        /* ── Scorecards ── */
+        .scorecards-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.85rem;
+            margin-bottom: 0.85rem;
         }
 
+        @media (max-width: 1200px) { .scorecards-row { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 700px)  { .scorecards-row { grid-template-columns: repeat(2, 1fr); } }
+
+        .sc-card {
+            border-radius: 18px;
+            padding: 1.1rem 1rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        .sc-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+        }
+
+        .sc-card::after {
+            content: '';
+            position: absolute;
+            top: -24px; right: -24px;
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+        }
+
+        .sc-purple { background: linear-gradient(135deg, #9b59b6, #6c3483); color: #fff; }
+        .sc-blue   { background: linear-gradient(135deg, #2980b9, #1a5276); color: #fff; }
+        .sc-green  { background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; }
+        .sc-orange { background: linear-gradient(135deg, #e67e22, #a04000); color: #fff; }
+        .sc-red    { background: linear-gradient(135deg, #e74c3c, #922b21); color: #fff; }
+
+        .sc-header {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.82;
+        }
+
+        .sc-value {
+            font-size: 1.65rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .sc-label {
+            font-size: 0.75rem;
+            opacity: 0.78;
+            font-weight: 500;
+        }
+
+        .sc-icon {
+            position: absolute;
+            bottom: 0.7rem; right: 0.9rem;
+            font-size: 1.8rem;
+            opacity: 0.18;
+        }
+
+        /* ── Run panel ── */
         .upload-card {
             background: transparent;
-            border-radius: 24px;
-            padding: 0;
-            box-shadow: none;
             border: none;
-            margin-bottom: 2rem;
+            margin-bottom: 0;
         }
 
         .da-run-panel {
@@ -133,105 +211,83 @@
             flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            gap: 1.75rem;
-            padding: 2rem 2.25rem;
-            border-radius: 22px;
-            background: linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.82) 0%,
-                rgba(248, 250, 252, 0.92) 45%,
-                rgba(237, 233, 254, 0.55) 100%
-            );
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            box-shadow:
-                0 12px 40px rgba(30, 27, 75, 0.14),
-                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            gap: 1.25rem;
+            padding: 1.2rem 1.8rem;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.82) 0%, rgba(248,250,252,0.92) 45%, rgba(237,233,254,0.55) 100%);
+            border: 1px solid rgba(255,255,255,0.7);
+            box-shadow: 0 8px 30px rgba(30,27,75,0.13), inset 0 1px 0 rgba(255,255,255,0.95);
             backdrop-filter: blur(14px);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-        }
-
-        .da-run-panel:hover {
-            transform: translateY(-2px);
-            box-shadow:
-                0 18px 48px rgba(30, 27, 75, 0.18),
-                inset 0 1px 0 rgba(255, 255, 255, 0.95);
         }
 
         .da-run-lead {
             display: flex;
             align-items: center;
-            gap: 1.25rem;
+            gap: 1rem;
             min-width: 0;
         }
 
         .da-run-icon {
             flex-shrink: 0;
-            width: 64px;
-            height: 64px;
-            border-radius: 18px;
+            width: 52px; height: 52px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: linear-gradient(145deg, #a855f7, #7c3aed);
             color: #fff;
-            font-size: 1.6rem;
-            box-shadow: 0 12px 28px rgba(124, 58, 237, 0.42);
+            font-size: 1.4rem;
+            box-shadow: 0 8px 22px rgba(124,58,237,0.4);
         }
 
         .da-run-title {
             margin: 0;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 800;
             color: var(--primary-color);
             letter-spacing: -0.03em;
-            line-height: 1.2;
         }
 
         .da-run-tag {
-            margin: 0.4rem 0 0 0;
-            font-size: 0.88rem;
+            margin: 0.25rem 0 0;
+            font-size: 0.85rem;
             color: #64748b;
             font-weight: 500;
         }
 
-        .da-run-side {
-            flex-shrink: 0;
-            text-align: center;
-        }
+        .da-run-side { flex-shrink: 0; text-align: center; }
 
         @media (min-width: 992px) {
-            .da-run-side {
-                text-align: right;
-                min-width: 240px;
-            }
+            .da-run-side { text-align: right; min-width: 220px; }
         }
 
         .btn-analyze {
             background: linear-gradient(135deg, var(--secondary-color), #8e44ad);
             border: none;
-            padding: 0.9rem 2.4rem;
-            font-size: 1rem;
+            padding: 0.75rem 2rem;
+            font-size: 0.95rem;
             font-weight: 600;
             border-radius: 999px;
             color: white;
             transition: all 0.3s ease;
-            box-shadow: 0 8px 22px rgba(155, 89, 182, 0.35);
+            box-shadow: 0 6px 18px rgba(155,89,182,0.35);
         }
 
         .btn-analyze:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(155, 89, 182, 0.45);
+            box-shadow: 0 10px 26px rgba(155,89,182,0.45);
             color: white;
         }
 
+        /* ── Scroll zone content ── */
         .analysis-grid {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            padding-top: 1rem;
         }
 
-        .summary-card,
-        .charts-card {
+        .summary-card, .charts-card {
             background: rgba(255,255,255,0.96);
             border-radius: 24px;
             padding: 1.8rem;
@@ -249,14 +305,9 @@
             gap: 0.5rem;
         }
 
-        .section-heading i {
-            color: var(--secondary-color);
-        }
+        .section-heading i { color: var(--secondary-color); }
 
-        .summary-table-wrapper {
-            max-height: 450px;
-            overflow: auto;
-        }
+        .summary-table-wrapper { max-height: 450px; overflow: auto; }
 
         .charts-grid {
             display: flex;
@@ -280,42 +331,23 @@
             gap: 0.4rem;
         }
 
-        .chart-body {
-            min-height: 420px;
-        }
+        .chart-body { min-height: 420px; }
 
-        .status-text {
-            font-size: 0.95rem;
-            color: #666;
-        }
+        .status-text { font-size: 0.95rem; color: #666; }
 
-        .loading {
-            text-align: center;
-            padding: 1.5rem 0;
-        }
+        .loading { text-align: center; padding: 1rem 0; }
 
-        .pulse {
-            animation: pulse 2s infinite;
-        }
+        .pulse { animation: pulse 2s infinite; }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.04); }
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.04); }
             100% { transform: scale(1); }
         }
 
         @media (max-width: 992px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .analysis-grid {
-                flex-direction: column;
-            }
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; }
         }
     </style>
 </head>
@@ -326,56 +358,76 @@
         </div>
         <nav class="sidebar-nav">
             <div class="nav-item">
-                <a href="/" class="nav-link">
-                    <i class="fas fa-home"></i>
-                    Dashboard
-                </a>
+                <a href="/" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
             </div>
             <div class="nav-item">
-                <a href="/individual" class="nav-link">
-                    <i class="fas fa-user"></i>
-                    Individual Scoring
-                </a>
+                <a href="/individual" class="nav-link"><i class="fas fa-user"></i> Individual Scoring</a>
             </div>
             <div class="nav-item">
-                <a href="/batch" class="nav-link">
-                    <i class="fas fa-upload"></i>
-                    Batch Scoring
-                </a>
+                <a href="/batch" class="nav-link"><i class="fas fa-upload"></i> Batch Scoring</a>
             </div>
             <div class="nav-item">
-                <a href="/data_analysis" class="nav-link active">
-                    <i class="fas fa-chart-bar"></i>
-                    Data Analysis
-                </a>
+                <a href="/data_analysis" class="nav-link active"><i class="fas fa-chart-bar"></i> Data Analysis</a>
             </div>
             <div class="nav-item">
-                <a href="/prediction_logs" class="nav-link">
-                    <i class="fas fa-history"></i>
-                    Prediction Logs
-                </a>
+                <a href="/prediction_logs" class="nav-link"><i class="fas fa-history"></i> Prediction Logs</a>
             </div>
             <div class="nav-item">
-                <a href="/interpretability" class="nav-link">
-                    <i class="fas fa-brain"></i>
-                    AI Interpretability
-                </a>
+                <a href="/interpretability" class="nav-link"><i class="fas fa-brain"></i> AI Interpretability</a>
             </div>
         </nav>
     </div>
 
     <div class="main-content">
-        <div class="page-header">
-            <h1 class="page-title">
-                <i class="fas fa-chart-pie me-2"></i>
-                Data Analysis & Insights
-            </h1>
-            <p class="page-subtitle">
-                Clear visuals and statistics built from your live credit portfolio.
-            </p>
-        </div>
 
-        <div class="analysis-layout">
+        <!-- ===== FROZEN TOP ZONE ===== -->
+        <div class="sticky-top-zone">
+
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Data Analysis &amp; Insights
+                </h1>
+                <p class="page-subtitle">
+                    Clear visuals and statistics built from your live credit portfolio.
+                </p>
+            </div>
+
+            <!-- Scorecards -->
+            <div class="scorecards-row">
+                <div class="sc-card sc-purple">
+                    <span class="sc-header">Portfolio Size</span>
+                    <span class="sc-value" id="sc-total">&#8212;</span>
+                    <span class="sc-label">Total Customers</span>
+                    <i class="fas fa-users sc-icon"></i>
+                </div>
+                <div class="sc-card sc-red">
+                    <span class="sc-header">Credit Quality</span>
+                    <span class="sc-value" id="sc-npl">&#8212;</span>
+                    <span class="sc-label">Non-Performing Rate</span>
+                    <i class="fas fa-exclamation-triangle sc-icon"></i>
+                </div>
+                <div class="sc-card sc-green">
+                    <span class="sc-header">Income Profile</span>
+                    <span class="sc-value" id="sc-income">&#8212;</span>
+                    <span class="sc-label">Avg Monthly Net Income</span>
+                    <i class="fas fa-wallet sc-icon"></i>
+                </div>
+                <div class="sc-card sc-blue">
+                    <span class="sc-header">Loan Exposure</span>
+                    <span class="sc-value" id="sc-exposure">&#8212;</span>
+                    <span class="sc-label">Avg Loan Amount</span>
+                    <i class="fas fa-hand-holding-usd sc-icon"></i>
+                </div>
+                <div class="sc-card sc-orange">
+                    <span class="sc-header">AML Watchlist</span>
+                    <span class="sc-value" id="sc-aml">&#8212;</span>
+                    <span class="sc-label">High AML Risk Customers</span>
+                    <i class="fas fa-shield-alt sc-icon"></i>
+                </div>
+            </div>
+
+            <!-- Run panel -->
             <div class="upload-card">
                 <div class="da-run-panel">
                     <div class="da-run-lead">
@@ -389,28 +441,32 @@
                     </div>
                     <div class="da-run-side">
                         <button type="button" id="runAnalysisBtn" class="btn-analyze pulse">
-                            <i class="fas fa-play me-2"></i>
-                            Run analysis
+                            <i class="fas fa-play me-2"></i>Run analysis
                         </button>
-                        <div id="analysisLoading" class="loading mt-2" style="display: none;">
+                        <div id="analysisLoading" class="loading mt-2" style="display:none;">
                             <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
-                            <span class="ms-2">Working…</span>
+                            <span class="ms-2">Working&hellip;</span>
                         </div>
                         <div id="statusText" class="status-text mt-2">
-                            When you’re ready, hit run.
+                            When you're ready, hit run.
                         </div>
                     </div>
                 </div>
             </div>
 
+        </div>
+        <!-- ===== END FROZEN TOP ZONE ===== -->
+
+        <!-- ===== SCROLLABLE ZONE ===== -->
+        <div class="scroll-zone">
             <div class="analysis-grid">
+
                 <div class="summary-card">
                     <div class="section-heading">
                         <i class="fas fa-table"></i>
                         <span>Summary Statistics</span>
                     </div>
-                    <div id="summaryContainer" class="summary-table-wrapper">
-                    </div>
+                    <div id="summaryContainer" class="summary-table-wrapper"></div>
                 </div>
 
                 <div class="charts-card">
@@ -420,51 +476,36 @@
                     </div>
                     <div id="chartsContainer" class="charts-grid">
                         <div class="chart-panel">
-                            <div class="chart-title">
-                                <i class="fas fa-venus-mars"></i>
-                                <span>Gender Distribution</span>
-                            </div>
+                            <div class="chart-title"><i class="fas fa-venus-mars"></i><span>Gender Distribution</span></div>
                             <div id="gender_pie" class="chart-body"></div>
                         </div>
                         <div class="chart-panel">
-                            <div class="chart-title">
-                                <i class="fas fa-industry"></i>
-                                <span>Customers by Sector</span>
-                            </div>
+                            <div class="chart-title"><i class="fas fa-industry"></i><span>Customers by Sector</span></div>
                             <div id="sector_bar" class="chart-body"></div>
                         </div>
                         <div class="chart-panel">
-                            <div class="chart-title">
-                                <i class="fas fa-money-bill-wave"></i>
-                                <span>Average Net Income by Sector</span>
-                            </div>
+                            <div class="chart-title"><i class="fas fa-money-bill-wave"></i><span>Average Net Income by Sector</span></div>
                             <div id="income_sector_bar" class="chart-body"></div>
                         </div>
                         <div class="chart-panel">
-                            <div class="chart-title">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span>Non-Performing Loans by Gender</span>
-                            </div>
+                            <div class="chart-title"><i class="fas fa-exclamation-circle"></i><span>Non-Performing Loans by Gender</span></div>
                             <div id="nonperforming_gender_stacked" class="chart-body"></div>
                         </div>
                         <div class="chart-panel">
-                            <div class="chart-title">
-                                <i class="fas fa-user-clock"></i>
-                                <span>Age Distribution (5 Bins)</span>
-                            </div>
+                            <div class="chart-title"><i class="fas fa-user-clock"></i><span>Age Distribution (5 Bins)</span></div>
                             <div id="age_bins" class="chart-body"></div>
                         </div>
                         <div class="chart-panel">
-                            <div class="chart-title">
-                                <i class="fas fa-shield-alt"></i>
-                                <span>AML Risk Class Distribution</span>
-                            </div>
+                            <div class="chart-title"><i class="fas fa-shield-alt"></i><span>AML Risk Class Distribution</span></div>
                             <div id="aml_risk_pie" class="chart-body"></div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
+        <!-- ===== END SCROLLABLE ZONE ===== -->
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -475,7 +516,7 @@
         const loadingEl = document.getElementById('analysisLoading');
 
         runBtn.addEventListener('click', async function () {
-            statusText.textContent = 'Running analysis on the stored dataset…';
+            statusText.textContent = 'Running analysis on the stored dataset\u2026';
             loadingEl.style.display = 'block';
             runBtn.disabled = true;
 
@@ -500,6 +541,16 @@
                     summaryContainer.innerHTML = '<div class="text-muted">No summary statistics available.</div>';
                 }
 
+                if (result.metrics) {
+                    const m = result.metrics;
+                    const fmt = (n) => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : String(n);
+                    document.getElementById('sc-total').textContent    = m.total_customers.toLocaleString();
+                    document.getElementById('sc-npl').textContent      = m.non_performing_rate + '%';
+                    document.getElementById('sc-income').textContent   = 'KES ' + fmt(m.avg_net_income);
+                    document.getElementById('sc-exposure').textContent = 'KES ' + fmt(m.avg_exposure);
+                    document.getElementById('sc-aml').textContent      = m.high_aml_pct + '%';
+                }
+
                 if (result.plots && typeof Plotly !== 'undefined') {
                     Object.entries(result.plots).forEach(([key, fig]) => {
                         const target = document.getElementById(key);
@@ -507,13 +558,12 @@
                             Plotly.react(target, fig.data, fig.layout || {});
                         }
                     });
-
                     if (Object.keys(result.plots).length === 0) {
-                        statusText.textContent = 'Analysis complete, but no plots could be generated from this dataset.';
+                        statusText.textContent = 'Analysis complete, but no plots could be generated.';
                     }
                 }
 
-                statusText.textContent = 'Analysis complete. Scroll to explore the charts and statistics.';
+                statusText.textContent = 'Analysis complete. Scroll down to explore the charts and statistics.';
             } catch (err) {
                 statusText.textContent = 'Network error: ' + err.message;
             } finally {
@@ -524,4 +574,3 @@
     </script>
 </body>
 </html>
-

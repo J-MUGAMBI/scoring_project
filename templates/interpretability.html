@@ -232,6 +232,23 @@
         background: white;
       }
 
+      .cid-wrap { position: relative; }
+      .cid-dropdown {
+        position: absolute; top: 100%; left: 0; right: 0; z-index: 9999;
+        background: #fff; border: 2px solid var(--secondary-color);
+        border-top: none; border-radius: 0 0 12px 12px;
+        max-height: 220px; overflow-y: auto; display: none;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      }
+      .cid-dropdown.open { display: block; }
+      .cid-option {
+        padding: 0.6rem 1.2rem; cursor: pointer; font-size: 0.95rem;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .cid-option:last-child { border-bottom: none; }
+      .cid-option:hover, .cid-option.active { background: #f5eef8; }
+      .cid-empty { padding: 0.6rem 1.2rem; color: #999; font-size: 0.9rem; }
+
       .btn-analyze {
         background: linear-gradient(135deg, var(--secondary-color), #8e44ad);
         border: none;
@@ -393,53 +410,57 @@
           rgba(142, 68, 173, 0.1)
         );
         border-radius: 20px;
-        padding: 1.5rem;
         margin-top: 2rem;
         border: 2px solid rgba(155, 89, 182, 0.2);
-        max-height: 500px;
-        overflow-y: auto;
-      }
-
-      .recommendations-container::-webkit-scrollbar {
-        width: 8px;
-      }
-
-      .recommendations-container::-webkit-scrollbar-track {
-        background: rgba(155, 89, 182, 0.1);
-        border-radius: 10px;
-      }
-
-      .recommendations-container::-webkit-scrollbar-thumb {
-        background: var(--secondary-color);
-        border-radius: 10px;
-      }
-
-      .recommendations-container::-webkit-scrollbar-thumb:hover {
-        background: #8e44ad;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
       }
 
       .recommendations-title {
         font-size: 1.2rem;
         font-weight: 600;
         color: var(--primary-color);
-        margin-bottom: 1rem;
+        margin: 0;
         display: flex;
         align-items: center;
-        position: sticky;
-        top: 0;
         background: linear-gradient(
           135deg,
-          rgba(155, 89, 182, 0.15),
-          rgba(142, 68, 173, 0.15)
+          rgba(155, 89, 182, 0.2),
+          rgba(142, 68, 173, 0.2)
         );
-        padding: 0.5rem;
-        border-radius: 10px;
-        z-index: 10;
+        padding: 1rem 1.5rem;
+        border-bottom: 2px solid rgba(155, 89, 182, 0.2);
+        flex-shrink: 0;
       }
 
       .recommendations-title i {
         margin-right: 0.5rem;
         color: var(--secondary-color);
+      }
+
+      .recommendations-body {
+        padding: 1rem 1.5rem;
+        max-height: 420px;
+        overflow-y: auto;
+      }
+
+      .recommendations-body::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .recommendations-body::-webkit-scrollbar-track {
+        background: rgba(155, 89, 182, 0.1);
+        border-radius: 10px;
+      }
+
+      .recommendations-body::-webkit-scrollbar-thumb {
+        background: var(--secondary-color);
+        border-radius: 10px;
+      }
+
+      .recommendations-body::-webkit-scrollbar-thumb:hover {
+        background: #8e44ad;
       }
 
       .recommendation-item {
@@ -696,16 +717,14 @@
                     <i class="fas fa-id-card"></i>
                     Load customer
                   </h3>
-                  <label for="customerProfileSelect" class="form-label"
+                  <label for="customerIdInput" class="form-label"
                     >Customer ID</label
                   >
-                  <select
-                    class="form-select"
-                    id="customerProfileSelect"
-                    autocomplete="off"
-                  >
-                    <option value="">Loading customers…</option>
-                  </select>
+                  <div class="cid-wrap">
+                    <input type="text" class="form-control" id="customerIdInput"
+                      placeholder="Type or select a Customer ID…" autocomplete="off">
+                    <div class="cid-dropdown" id="customerDropdown"></div>
+                  </div>
                   <p class="small text-muted mt-2 mb-0" id="customerLoadHint">
                     Profiles come from the canonical dataset in the database.
                   </p>
@@ -958,7 +977,9 @@
                     <i class="fas fa-lightbulb"></i>
                     AI Recommendations
                   </h5>
-                  <div id="recommendations"></div>
+                  <div class="recommendations-body">
+                    <div id="recommendations"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -991,19 +1012,12 @@
       function setSelectOptionIfMissing(selectEl, value) {
         if (value === null || value === undefined || value === "") return;
         var s = String(value);
-        var found = false;
         for (var i = 0; i < selectEl.options.length; i++) {
-          if (selectEl.options[i].value === s) {
-            found = true;
-            break;
-          }
+          if (selectEl.options[i].value === s) { selectEl.value = s; return; }
         }
-        if (!found) {
-          var opt = document.createElement("option");
-          opt.value = s;
-          opt.textContent = s;
-          selectEl.appendChild(opt);
-        }
+        var opt = document.createElement("option");
+        opt.value = s; opt.textContent = s;
+        selectEl.appendChild(opt);
         selectEl.value = s;
       }
 
@@ -1016,10 +1030,7 @@
           if (!el) return;
           var v = row[key];
           if (v === null || v === undefined) v = "";
-          if (el instanceof RadioNodeList) {
-            el = el[0];
-            if (!el) return;
-          }
+          if (el instanceof RadioNodeList) { el = el[0]; if (!el) return; }
           if (el.tagName === "SELECT") {
             setSelectOptionIfMissing(el, v);
           } else if (key === "NetIncome") {
@@ -1031,49 +1042,108 @@
       }
 
       async function loadCanonicalCustomers() {
-        var sel = document.getElementById("customerProfileSelect");
         var hint = document.getElementById("customerLoadHint");
         try {
-          var res = await fetch("/api/canonical_dataset/customers", {
-            credentials: "same-origin",
-          });
+          var res = await fetch("/api/canonical_dataset/customers", { credentials: "same-origin" });
           var json = await res.json();
           __canonicalCustomers = json.customers || [];
-          sel.innerHTML = "";
-          var opt0 = document.createElement("option");
-          opt0.value = "";
-          opt0.textContent = __canonicalCustomers.length
-            ? "Select a Customer ID…"
-            : "No customers in database";
-          sel.appendChild(opt0);
-          __canonicalCustomers.forEach(function (row, idx) {
-            var id = row.CustomerID;
-            var o = document.createElement("option");
-            o.value = String(id);
-            o.textContent = "Customer ID: " + id;
-            o.dataset.idx = String(idx);
-            sel.appendChild(o);
-          });
+          var input = document.getElementById("customerIdInput");
+          if (__canonicalCustomers.length) {
+            input.placeholder = "Type or select a Customer ID…";
+          } else {
+            input.placeholder = "No customers in database";
+            input.disabled = true;
+          }
           if (json.error && hint) {
             hint.textContent = json.error;
             hint.classList.add("text-warning");
           }
         } catch (e) {
-          sel.innerHTML = '<option value="">Could not load customers</option>';
+          var input = document.getElementById("customerIdInput");
+          input.placeholder = "Could not load customers";
+          input.disabled = true;
           if (hint) hint.textContent = e.message || String(e);
         }
       }
 
-      document
-        .getElementById("customerProfileSelect")
-        .addEventListener("change", function () {
-          var v = this.value;
-          if (!v) return;
-          var row = __canonicalCustomers.find(function (r) {
-            return String(r.CustomerID) === v;
+      (function initCombobox() {
+        var input = document.getElementById("customerIdInput");
+        var dropdown = document.getElementById("customerDropdown");
+        var activeIdx = -1;
+
+        function renderDropdown(items) {
+          dropdown.innerHTML = "";
+          activeIdx = -1;
+          if (!items.length) {
+            dropdown.innerHTML = '<div class="cid-empty">No matches</div>';
+            dropdown.classList.add("open");
+            return;
+          }
+          items.forEach(function (row) {
+            var div = document.createElement("div");
+            div.className = "cid-option";
+            div.textContent = "Customer ID: " + row.CustomerID;
+            div.dataset.cid = String(row.CustomerID);
+            div.addEventListener("mousedown", function (e) {
+              e.preventDefault();
+              selectCustomer(row);
+            });
+            dropdown.appendChild(div);
           });
-          if (row) applyCustomerRow(row);
+          dropdown.classList.add("open");
+        }
+
+        function closeDropdown() {
+          dropdown.classList.remove("open");
+          activeIdx = -1;
+        }
+
+        function selectCustomer(row) {
+          input.value = String(row.CustomerID);
+          closeDropdown();
+          applyCustomerRow(row);
+        }
+
+        input.addEventListener("input", function () {
+          var q = this.value.trim();
+          if (!__canonicalCustomers.length) return;
+          if (!q) { closeDropdown(); return; }
+          var matches = __canonicalCustomers.filter(function (r) {
+            return String(r.CustomerID).startsWith(q);
+          }).slice(0, 50);
+          renderDropdown(matches);
         });
+
+        input.addEventListener("focus", function () {
+          var q = this.value.trim();
+          if (!q && __canonicalCustomers.length) {
+            renderDropdown(__canonicalCustomers.slice(0, 50));
+          }
+        });
+
+        input.addEventListener("blur", function () {
+          setTimeout(closeDropdown, 150);
+        });
+
+        input.addEventListener("keydown", function (e) {
+          var opts = dropdown.querySelectorAll(".cid-option");
+          if (!opts.length) return;
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            activeIdx = Math.min(activeIdx + 1, opts.length - 1);
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            activeIdx = Math.max(activeIdx - 1, 0);
+          } else if (e.key === "Enter") {
+            e.preventDefault();
+            if (activeIdx >= 0) opts[activeIdx].dispatchEvent(new MouseEvent("mousedown"));
+          } else if (e.key === "Escape") {
+            closeDropdown();
+          } else { return; }
+          opts.forEach(function (o, i) { o.classList.toggle("active", i === activeIdx); });
+          if (activeIdx >= 0) opts[activeIdx].scrollIntoView({ block: "nearest" });
+        });
+      })();
 
       loadCanonicalCustomers();
 
@@ -1115,33 +1185,22 @@
           try {
             const response = await fetch("/explain", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify(data),
             });
 
             const result = await response.json();
 
             if (response.ok) {
-              // Update risk assessment
               const riskDisplay = document.getElementById("riskDisplay");
               const riskIcon = document.getElementById("riskIcon");
               const riskCategory = document.getElementById("riskCategory");
-              const riskProbability =
-                document.getElementById("riskProbability");
+              const riskProbability = document.getElementById("riskProbability");
 
               riskCategory.textContent = result.risk_category;
               riskProbability.textContent = `${(result.probability * 100).toFixed(1)}% Risk Probability`;
+              riskDisplay.classList.remove("risk-low", "risk-medium", "risk-high");
 
-              // Remove existing risk classes
-              riskDisplay.classList.remove(
-                "risk-low",
-                "risk-medium",
-                "risk-high",
-              );
-
-              // Add appropriate styling and icon
               if (result.risk_category === "LOW RISK") {
                 riskDisplay.classList.add("risk-low");
                 riskIcon.className = "risk-icon fas fa-check-circle";
@@ -1153,45 +1212,31 @@
                 riskIcon.className = "risk-icon fas fa-times-circle";
               }
 
-              // Update feature importance plot
               document.getElementById("featurePlot").src =
                 "data:image/png;base64," + result.feature_plot;
 
-              // Update recommendations with structured display
-              const recommendationsDiv =
-                document.getElementById("recommendations");
+              const recommendationsDiv = document.getElementById("recommendations");
               recommendationsDiv.innerHTML = "";
 
               result.recommendations.forEach((rec) => {
                 const div = document.createElement("div");
-                
-                // Determine styling based on recommendation type
                 let iconClass = "";
                 let recClass = "recommendation-item ";
-                
                 if (rec.type === "success") {
-                  recClass += "rec-success";
-                  iconClass = "fas fa-check-circle text-success";
+                  recClass += "rec-success"; iconClass = "fas fa-check-circle text-success";
                 } else if (rec.type === "warning") {
-                  recClass += "rec-warning";
-                  iconClass = "fas fa-exclamation-triangle text-warning";
+                  recClass += "rec-warning"; iconClass = "fas fa-exclamation-triangle text-warning";
                 } else if (rec.type === "danger" || rec.type === "critical") {
-                  recClass += "rec-danger";
-                  iconClass = "fas fa-exclamation-circle text-danger";
+                  recClass += "rec-danger"; iconClass = "fas fa-exclamation-circle text-danger";
                 } else if (rec.type === "maintain") {
-                  recClass += "rec-success";
-                  iconClass = "fas fa-thumbs-up text-success";
+                  recClass += "rec-success"; iconClass = "fas fa-thumbs-up text-success";
                 } else if (rec.type === "improve") {
-                  recClass += "rec-warning";
-                  iconClass = "fas fa-arrow-up text-warning";
+                  recClass += "rec-warning"; iconClass = "fas fa-arrow-up text-warning";
                 } else if (rec.type === "tip") {
-                  recClass += "rec-info";
-                  iconClass = "fas fa-lightbulb text-info";
+                  recClass += "rec-info"; iconClass = "fas fa-lightbulb text-info";
                 } else {
-                  recClass += "rec-info";
-                  iconClass = "fas fa-info-circle text-info";
+                  recClass += "rec-info"; iconClass = "fas fa-info-circle text-info";
                 }
-                
                 div.className = recClass;
                 div.innerHTML = `
                   <div class="rec-header">
